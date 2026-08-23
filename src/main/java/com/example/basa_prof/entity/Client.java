@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @Entity
 @Table(name = "clients", schema = "myschema")
@@ -144,5 +145,23 @@ public class Client {
 
     public void setObjects(java.util.List<ObjectEntity> objects) {
         this.objects = objects;
+    }
+
+    @Override
+    public String toString() {
+        return fullName != null ? fullName : "";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Client client = (Client) o;
+        return id != null && id.equals(client.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

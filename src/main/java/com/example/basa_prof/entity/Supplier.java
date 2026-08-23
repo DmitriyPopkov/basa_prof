@@ -3,6 +3,7 @@ package com.example.basa_prof.entity;
 import jakarta.persistence.*;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @Entity
 @Table(name = "suppliers", schema = "myschema")
@@ -105,4 +106,22 @@ public class Supplier {
     public void setMaterials(java.util.List<Material> materials) {
         this.materials = materials;
     }
+    @Override
+    public String toString() {
+        return name != null ? name : "";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Supplier supplier = (Supplier) o;
+        return id != null && id.equals(supplier.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
+

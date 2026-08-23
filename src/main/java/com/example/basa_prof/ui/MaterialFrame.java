@@ -93,7 +93,7 @@ public class MaterialFrame extends JFrame {
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Таблица
-        String[] columns = {"ID", "Название", "Ед.изм.", "Цена продаж.", "Цена закупки", "Кол-во"};
+        String[] columns = {"ID", "Название", "Ед.изм.", "Цена продаж.", "Цена закупки", "Кол-во", "Поставщик"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -129,7 +129,8 @@ public class MaterialFrame extends JFrame {
                     material.getUnit(),
                     material.getPrice(),
                     material.getPurchasePrice(),
-                    material.getQuantity()
+                    material.getQuantity(),
+                    material.getSupplier() != null ? material.getSupplier().getName() : ""
             });
         }
     }

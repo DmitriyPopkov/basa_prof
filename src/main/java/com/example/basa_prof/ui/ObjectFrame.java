@@ -50,13 +50,14 @@ public class ObjectFrame extends JFrame {
         setSize(1400, 800);
         setLocationRelativeTo(null);
 
-        JSplitPane mainSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        mainSplit.setDividerLocation(300);
+        JSplitPane topSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        topSplit.setDividerLocation(500);
+        topSplit.setResizeWeight(0.4);
 
-        // Верхняя панель - выбор клиента
+        // Верхняя левая панель - выбор клиента
         JPanel clientPanel = new JPanel(new BorderLayout(10, 10));
         clientPanel.setBorder(BorderFactory.createTitledBorder("Выберите клиента"));
-        clientPanel.setPreferredSize(new Dimension(1200, 250));
+        clientPanel.setPreferredSize(new Dimension(400, 500));
 
         JPanel clientSelectPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         clientSelectPanel.add(new JLabel("Клиент:"));
@@ -73,7 +74,6 @@ public class ObjectFrame extends JFrame {
         // Информация о клиенте
         JPanel clientInfoPanel = new JPanel(new GridLayout(6, 2, 5, 5));
         clientInfoPanel.setBorder(BorderFactory.createTitledBorder("Информация о клиенте"));
-        clientInfoPanel.setPreferredSize(new Dimension(1200, 180));
 
         JLabel lblFullName = new JLabel("ФИО:");
         tfClientFullName = new JTextField();
@@ -104,13 +104,14 @@ public class ObjectFrame extends JFrame {
 
         clientPanel.add(clientInfoPanel, BorderLayout.CENTER);
 
-        // Нижняя панель - объекты
-        JPanel objectPanel = new JPanel(new BorderLayout(10, 10));
-        objectPanel.setBorder(BorderFactory.createTitledBorder("Объекты клиента"));
+        // Верхняя правая панель - форма объекта
+        JPanel objectFormPanel = new JPanel(new BorderLayout(10, 10));
+        objectFormPanel.setBorder(BorderFactory.createTitledBorder("Редактирование объекта"));
+        objectFormPanel.setPreferredSize(new Dimension(600, 500));
 
         // Форма объекта
         JPanel objectForm = new JPanel(new GridLayout(9, 2, 5, 5));
-        objectForm.setPreferredSize(new Dimension(1200, 200));
+        objectForm.setPreferredSize(new Dimension(500, 300));
 
         tfName = new JTextField();
         tfObjectType = new JTextField();
@@ -155,8 +156,16 @@ public class ObjectFrame extends JFrame {
         objectButtons.add(btnDeleteObject);
         objectButtons.add(btnRefreshObjects);
 
-        objectPanel.add(objectForm, BorderLayout.NORTH);
-        objectPanel.add(objectButtons, BorderLayout.CENTER);
+        objectFormPanel.add(objectForm, BorderLayout.CENTER);
+        objectFormPanel.add(objectButtons, BorderLayout.SOUTH);
+
+        topSplit.setLeftComponent(clientPanel);
+        topSplit.setRightComponent(objectFormPanel);
+
+        // Нижняя панель - таблица объектов
+        JPanel tablePanel = new JPanel(new BorderLayout(10, 10));
+        tablePanel.setBorder(BorderFactory.createTitledBorder("Все объекты клиента"));
+        tablePanel.setPreferredSize(new Dimension(1200, 250));
 
         // Таблица объектов
         String[] columns = {"ID", "Название", "Тип", "Адрес", "Площадь", "Цена", "Начало", "Окончание"};
@@ -176,11 +185,14 @@ public class ObjectFrame extends JFrame {
         });
 
         JScrollPane tableScroll = new JScrollPane(objectTable);
-        tableScroll.setBorder(BorderFactory.createTitledBorder("Список объектов"));
-        objectPanel.add(tableScroll, BorderLayout.SOUTH);
+        tablePanel.add(tableScroll, BorderLayout.CENTER);
 
-        mainSplit.setLeftComponent(clientPanel);
-        mainSplit.setRightComponent(objectPanel);
+        // Главный сплит
+        JSplitPane mainSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        mainSplit.setTopComponent(topSplit);
+        mainSplit.setBottomComponent(tablePanel);
+        mainSplit.setDividerLocation(550);
+        mainSplit.setResizeWeight(0.65);
 
         setContentPane(mainSplit);
     }
