@@ -21,7 +21,8 @@ public class DealFrame extends JFrame {
     private JTable dealTable;
     private DefaultTableModel tableModel;
 
-    private JTextField tfContractNumber, tfAmount, tfDealType, tfStatus, tfNotes;
+    private JTextField tfContractNumber, tfAmount, tfDealType, tfStatus;
+    private JTextArea tfNotes;
     private JComboBox<Client> cbClient;
 
     public DealFrame(DealService dealService, ClientService clientService, ObjectEntityService objectService) {
@@ -51,7 +52,7 @@ public class DealFrame extends JFrame {
         formPanel.add(cbClient);
 
         formPanel.add(new JLabel("Номер договора:"));
-        tfContractNumber = new JTextField();
+        tfContractNumber = new JTextField( );
         formPanel.add(tfContractNumber);
 
         formPanel.add(new JLabel("Сумма:"));
@@ -67,8 +68,9 @@ public class DealFrame extends JFrame {
         formPanel.add(tfStatus);
 
         formPanel.add(new JLabel("Примечания:"));
-        tfNotes = new JTextField();
-        formPanel.add(tfNotes);
+        tfNotes = new JTextArea(3, 20);
+        JScrollPane notesScroll = new JScrollPane(tfNotes);
+        formPanel.add(notesScroll);
 
         // Кнопки
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -181,7 +183,7 @@ public class DealFrame extends JFrame {
             deal.setAmount(amount);
             deal.setDealType(tfDealType.getText());
             deal.setStatus(tfStatus.getText());
-            deal.setNotes(tfNotes.getText());
+            deal.setNotes(tfNotes.getText().trim().isEmpty() ? null : tfNotes.getText().trim());
 
             dealService.save(deal);
             loadDeals();

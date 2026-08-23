@@ -1,6 +1,10 @@
 package com.example.basa_prof.ui;
 
+import com.example.basa_prof.entity.Client;
+import com.example.basa_prof.entity.ObjectEntity;
 import com.example.basa_prof.entity.Work;
+import com.example.basa_prof.service.ClientService;
+import com.example.basa_prof.service.ObjectEntityService;
 import com.example.basa_prof.service.WorkService;
 
 import javax.swing.*;
@@ -13,7 +17,9 @@ import java.util.List;
 
 public class WorkFrame extends JFrame {
 
-    private  WorkService workService;
+    private WorkService workService;
+    private ClientService clientService;
+    private ObjectEntityService objectService;
 
     private JTable workTable;
     private DefaultTableModel tableModel;
@@ -21,11 +27,16 @@ public class WorkFrame extends JFrame {
     private JTextField tfName, tfWorkType, tfDescription, tfEstimatedCost,
             tfPrice, tfPayment, tfPaymentDate;
     private JTextField tfStartDate, tfEndDate;
+    private JComboBox<Client> cbClient;
+    private JComboBox<ObjectEntity> cbObject;
 
-    public WorkFrame(WorkService workService) {
+    public WorkFrame(WorkService workService, ClientService clientService, ObjectEntityService objectService) {
         this.workService = workService;
+        this.clientService = clientService;
+        this.objectService = objectService;
         initialize();
         loadWorks();
+        loadClients();
     }
 
 
@@ -40,7 +51,7 @@ public class WorkFrame extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Форма ввода
-        JPanel formPanel = new JPanel(new GridLayout(10, 2, 5, 5));
+        JPanel formPanel = new JPanel(new GridLayout(12, 2, 5, 5));
         formPanel.setBorder(BorderFactory.createTitledBorder("Данные работы"));
 
         tfName = new JTextField();
@@ -52,6 +63,14 @@ public class WorkFrame extends JFrame {
         tfPrice = new JTextField();
         tfPayment = new JTextField();
         tfPaymentDate = new JTextField();
+        cbClient = new JComboBox<>();
+        cbObject = new JComboBox<>();
+
+        formPanel.add(new JLabel("Клиент:"));
+        formPanel.add(cbClient);
+
+        formPanel.add(new JLabel("Объект:"));
+        formPanel.add(cbObject);
 
         formPanel.add(new JLabel("Название:"));
         formPanel.add(tfName);
@@ -83,6 +102,8 @@ public class WorkFrame extends JFrame {
         formPanel.add(new JLabel(""));
         formPanel.add(new JLabel(""));
 
+        cbClient.addActionListener(e -> loadObjectsForClient());
+
         // Кнопки
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton btnSave = new JButton("Сохранить");
@@ -101,7 +122,7 @@ public class WorkFrame extends JFrame {
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Таблица
-        String[] columns = {"ID", "Название", "Тип", "Оценка", "Цена", "Статус"};
+        String[] columns = {"ID", "Клиент", "Объект", "Название", "Тип", "Оценка", "Цена", "Статус"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -131,14 +152,37 @@ public class WorkFrame extends JFrame {
         tableModel.setRowCount(0);
         List<Work> works = workService.findAll();
         for (Work work : works) {
+            String clientName = work.getObject() != null && work.getObject().getClient() != null
+                    ? work.getObject().getClient().getFullName() : "—";
+            String objectName = work.getObject() != null ? work.getObject().getName() : "—";
             tableModel.addRow(new Object[]{
                     work.getId(),
+                    clientName,
+                    objectName,
                     work.getName(),
                     work.getWorkType(),
                     work.getEstimatedCost(),
-                    work.getPrice(),
                     work.getPayment() != null ? work.getPayment() : "—"
             });
+        }
+    }
+
+    private void loadClients() {
+        cbClient.removeAllItems();
+        List<Client> clients = clientService.findAll();
+        for (Client client : clients) {
+            cbClient.addItem(client);
+        }
+    }
+
+    private void loadObjectsForClient() {
+        cbObject.removeAllItems();
+        Client selectedClient = (Client) cbClient.getSelectedItem();
+        if (selectedClient != null) {
+            List<ObjectEntity> objects = selectedClient.getObjects();
+            for (ObjectEntity object : objects) {
+                cbObject.addItem(object);
+            }
         }
     }
     private void fillForm() {
@@ -147,6 +191,12 @@ public class WorkFrame extends JFrame {
             Long id = (Long) tableModel.getValueAt(selectedRow, 0);
             Work work = workService.findById(id).orElse(null);
             if (work != null) {
+                if (work.getObject() != null && work.getObject().getClient() != null) {
+                    cbClient.setSelectedItem(work.getObject().getClient());
+                    loadObjectsForClient();
+                    cbObject.setSelectedItem(work.getObject());
+                }
+
                 tfName.setText(work.getName());
                 tfWorkType.setText(work.getWorkType());
                 tfDescription.setText(work.getDescription());
@@ -188,6 +238,14 @@ public class WorkFrame extends JFrame {
                 work = workService.findById(id).orElse(new Work());
             } else {
                 work = new Work();
+            }
+
+            Client selectedClient = (Client) cbClient.getSelectedItem();
+            if (selectedClient != null) {
+                ObjectEntity selectedObject = (ObjectEntity) cbObject.getSelectedItem();
+                if (selectedObject != null) {
+                    work.setObject(selectedObject);
+                }
             }
 
             work.setName(tfName.getText());
@@ -271,6 +329,8 @@ public class WorkFrame extends JFrame {
     }
 
     private void clearForm() {
+        cbClient.setSelectedIndex(-1);
+        cbObject.removeAllItems();
         tfName.setText("");
         tfWorkType.setText("");
         tfDescription.setText("");

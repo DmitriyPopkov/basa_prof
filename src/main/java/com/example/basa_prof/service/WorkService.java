@@ -15,11 +15,11 @@ public class WorkService {
     private WorkRepository workRepository;
 
     public List<Work> findAll() {
-        return workRepository.findAll();
+        return workRepository.findAllWithObjectAndClient();
     }
 
     public Optional<Work> findById(Long id) {
-        return workRepository.findById(id);
+        return workRepository.findByIdWithObjectAndClient(id);
     }
 
     public Work save(Work work) {

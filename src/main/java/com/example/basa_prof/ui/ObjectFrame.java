@@ -26,7 +26,8 @@ public class ObjectFrame extends JFrame {
     private JTable objectTable;
     private DefaultTableModel tableModel;
 
-    private JTextField tfName, tfObjectType, tfAddress, tfArea, tfPrice, tfDescription;
+    private JTextField tfName, tfObjectType, tfAddress, tfArea, tfPrice;
+    private JTextArea tfDescription;
     private JTextField tfStartDate, tfEndDate, tfDocuments;
     private JTextField tfClientFullName, tfClientPhone, tfClientEmail, tfClientAddress, tfClientContact, tfClientJob;
 
@@ -118,7 +119,7 @@ public class ObjectFrame extends JFrame {
         tfAddress = new JTextField();
         tfArea = new JTextField();
         tfPrice = new JTextField();
-        tfDescription = new JTextField();
+        tfDescription = new JTextArea(3, 20);
         tfStartDate = new JTextField();
         tfEndDate = new JTextField();
         tfDocuments = new JTextField();
@@ -134,7 +135,8 @@ public class ObjectFrame extends JFrame {
         objectForm.add(new JLabel("Цена:"));
         objectForm.add(tfPrice);
         objectForm.add(new JLabel("Описание:"));
-        objectForm.add(tfDescription);
+        JScrollPane descriptionScroll = new JScrollPane(tfDescription);
+        objectForm.add(descriptionScroll);
         objectForm.add(new JLabel("Дата начала (дд.мм.гггг чч:мм):"));
         objectForm.add(tfStartDate);
         objectForm.add(new JLabel("Дата окончания (дд.мм.гггг чч:мм):"));
@@ -322,7 +324,7 @@ public class ObjectFrame extends JFrame {
                 object.setPrice(null);
             }
 
-            object.setDescription(tfDescription.getText());
+            object.setDescription(tfDescription.getText().trim().isEmpty() ? null : tfDescription.getText().trim());
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
             if (!tfStartDate.getText().isBlank()) {

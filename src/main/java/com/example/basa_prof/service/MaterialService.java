@@ -15,11 +15,11 @@ public class MaterialService {
     private MaterialRepository materialRepository;
 
     public List<Material> findAll() {
-        return materialRepository.findAll();
+        return materialRepository.findAllWithSupplierAndObject();
     }
 
     public Optional<Material> findById(Long id) {
-        return materialRepository.findById(id);
+        return materialRepository.findByIdWithSupplierAndObject(id);
     }
 
     public Material save(Material material) {

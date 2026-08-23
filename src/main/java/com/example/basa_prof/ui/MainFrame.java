@@ -42,11 +42,11 @@ public class MainFrame extends JFrame {
         menuDeals.add(menuItem3);
 
         JMenuItem menuItem4 = new JMenuItem("Управление работами");
-        menuItem4.addActionListener(e -> new WorkFrame(workService).setVisible(true));
+        menuItem4.addActionListener(e -> new WorkFrame(workService, clientService, objectService).setVisible(true));
         menuWorks.add(menuItem4);
 
         JMenuItem menuItem5 = new JMenuItem("Управление материалами");
-        menuItem5.addActionListener(e -> new MaterialFrame(materialService, supplierService).setVisible(true));
+        menuItem5.addActionListener(e -> new MaterialFrame(materialService, supplierService, clientService, objectService).setVisible(true));
         menuMaterials.add(menuItem5);
 
         JMenuItem menuItem6 = new JMenuItem("Управление сотрудниками");

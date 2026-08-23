@@ -1,8 +1,12 @@
 package com.example.basa_prof.ui;
 
+import com.example.basa_prof.entity.Client;
 import com.example.basa_prof.entity.Material;
+import com.example.basa_prof.entity.ObjectEntity;
 import com.example.basa_prof.entity.Supplier;
+import com.example.basa_prof.service.ClientService;
 import com.example.basa_prof.service.MaterialService;
+import com.example.basa_prof.service.ObjectEntityService;
 import com.example.basa_prof.service.SupplierService;
 
 import javax.swing.*;
@@ -15,19 +19,26 @@ public class MaterialFrame extends JFrame {
 
     private MaterialService materialService;
     private SupplierService supplierService;
+    private ClientService clientService;
+    private ObjectEntityService objectService;
 
     private JTable materialTable;
     private DefaultTableModel tableModel;
 
     private JTextField tfName, tfUnit, tfPrice, tfPurchasePrice, tfQuantity, tfDescription;
     private JComboBox<Supplier> cbSupplier;
+    private JComboBox<Client> cbClient;
+    private JComboBox<ObjectEntity> cbObject;
 
-    public MaterialFrame(MaterialService materialService, SupplierService supplierService) {
+    public MaterialFrame(MaterialService materialService, SupplierService supplierService, ClientService clientService, ObjectEntityService objectService) {
         this.materialService = materialService;
         this.supplierService = supplierService;
+        this.clientService = clientService;
+        this.objectService = objectService;
         initialize();
         loadMaterials();
         loadSuppliers();
+        loadClients();
     }
 
     private void initialize() {
@@ -40,7 +51,7 @@ public class MaterialFrame extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Форма ввода
-        JPanel formPanel = new JPanel(new GridLayout(8, 2, 5, 5));
+        JPanel formPanel = new JPanel(new GridLayout(12, 2, 5, 5));
         formPanel.setBorder(BorderFactory.createTitledBorder("Данные материала"));
 
         cbSupplier = new JComboBox<>();
@@ -50,6 +61,8 @@ public class MaterialFrame extends JFrame {
         tfPurchasePrice = new JTextField();
         tfQuantity = new JTextField();
         tfDescription = new JTextField();
+        cbClient = new JComboBox<>();
+        cbObject = new JComboBox<>();
 
         formPanel.add(new JLabel("Поставщик:"));
         formPanel.add(cbSupplier);
@@ -75,6 +88,14 @@ public class MaterialFrame extends JFrame {
         formPanel.add(new JLabel(""));
         formPanel.add(new JLabel(""));
 
+        formPanel.add(new JLabel("Клиент:"));
+        formPanel.add(cbClient);
+
+        formPanel.add(new JLabel("Объект:"));
+        formPanel.add(cbObject);
+
+        cbClient.addActionListener(e -> loadObjectsForClient());
+
         // Кнопки
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton btnSave = new JButton("Сохранить");
@@ -93,7 +114,7 @@ public class MaterialFrame extends JFrame {
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Таблица
-        String[] columns = {"ID", "Название", "Ед.изм.", "Цена продаж.", "Цена закупки", "Кол-во", "Поставщик"};
+        String[] columns = {"ID", "Название", "Ед.изм.", "Цена продаж.", "Цена закупки", "Кол-во", "Поставщик", "Клиент", "Объект"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -130,7 +151,10 @@ public class MaterialFrame extends JFrame {
                     material.getPrice(),
                     material.getPurchasePrice(),
                     material.getQuantity(),
-                    material.getSupplier() != null ? material.getSupplier().getName() : ""
+                    material.getSupplier() != null ? material.getSupplier().getName() : "",
+                    material.getObject() != null && material.getObject().getClient() != null
+                            ? material.getObject().getClient().getFullName() : "—",
+                    material.getObject() != null ? material.getObject().getName() : "—"
             });
         }
     }
@@ -140,6 +164,25 @@ public class MaterialFrame extends JFrame {
         cbSupplier.removeAllItems();
         for (Supplier supplier : suppliers) {
             cbSupplier.addItem(supplier);
+        }
+    }
+
+    private void loadClients() {
+        cbClient.removeAllItems();
+        List<Client> clients = clientService.findAll();
+        for (Client client : clients) {
+            cbClient.addItem(client);
+        }
+    }
+
+    private void loadObjectsForClient() {
+        cbObject.removeAllItems();
+        Client selectedClient = (Client) cbClient.getSelectedItem();
+        if (selectedClient != null) {
+            List<ObjectEntity> objects = selectedClient.getObjects();
+            for (ObjectEntity object : objects) {
+                cbObject.addItem(object);
+            }
         }
     }
 
@@ -156,6 +199,12 @@ public class MaterialFrame extends JFrame {
                 tfPurchasePrice.setText(material.getPurchasePrice() != null ? material.getPurchasePrice().toPlainString() : "");
                 tfQuantity.setText(material.getQuantity() != null ? material.getQuantity().toString() : "");
                 tfDescription.setText(material.getDescription());
+
+                if (material.getObject() != null && material.getObject().getClient() != null) {
+                    cbClient.setSelectedItem(material.getObject().getClient());
+                    loadObjectsForClient();
+                    cbObject.setSelectedItem(material.getObject());
+                }
             }
         }
     }
@@ -182,6 +231,14 @@ public class MaterialFrame extends JFrame {
             material.setSupplier(selectedSupplier);
             material.setName(tfName.getText());
             material.setUnit(tfUnit.getText());
+
+            Client selectedClient = (Client) cbClient.getSelectedItem();
+            if (selectedClient != null) {
+                ObjectEntity selectedObject = (ObjectEntity) cbObject.getSelectedItem();
+                if (selectedObject != null) {
+                    material.setObject(selectedObject);
+                }
+            }
 
             if (!tfPrice.getText().isBlank()) {
                 material.setPrice(new BigDecimal(tfPrice.getText()));
@@ -233,6 +290,8 @@ public class MaterialFrame extends JFrame {
 
     private void clearForm() {
         cbSupplier.setSelectedIndex(-1);
+        cbClient.setSelectedIndex(-1);
+        cbObject.removeAllItems();
         tfName.setText("");
         tfUnit.setText("");
         tfPrice.setText("");
