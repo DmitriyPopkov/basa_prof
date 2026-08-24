@@ -34,6 +34,12 @@ public class Material {
     @JoinColumn(name = "supplier_id")
     private Supplier supplier;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deal_id")
+    private Deal deal;
+
+    private String status;
+
     public Material() {}
 
     public Material(String name, String unit, BigDecimal price,
@@ -117,5 +123,21 @@ public class Material {
 
     public void setSupplier(Supplier supplier) {
         this.supplier = supplier;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Deal getDeal() {
+        return deal;
+    }
+
+    public void setDeal(Deal deal) {
+        this.deal = deal;
     }
 }

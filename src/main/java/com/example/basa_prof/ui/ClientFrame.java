@@ -34,7 +34,7 @@ public class ClientFrame extends JFrame {
         JPanel formPanel = new JPanel(new GridLayout(5, 2, 5, 5));
         formPanel.setBorder(BorderFactory.createTitledBorder("Данные клиента"));
 
-        formPanel.add(new JLabel("ФИО:"));
+        formPanel.add(new JLabel("Организация"));
         tfFullName = new JTextField();
         formPanel.add(tfFullName);
 

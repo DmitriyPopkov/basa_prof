@@ -38,9 +38,15 @@ public class Work {
     @Column(name = "payment_date")
     private LocalDate paymentDate;
 
+    private String status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "object_id")
     private ObjectEntity object;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deal_id")
+    private Deal deal;
 
     public Work() {}
 
@@ -131,11 +137,27 @@ public class Work {
         this.paymentDate = paymentDate;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public ObjectEntity getObject() {
         return object;
     }
 
     public void setObject(ObjectEntity object) {
         this.object = object;
+    }
+
+    public Deal getDeal() {
+        return deal;
+    }
+
+    public void setDeal(Deal deal) {
+        this.deal = deal;
     }
 }

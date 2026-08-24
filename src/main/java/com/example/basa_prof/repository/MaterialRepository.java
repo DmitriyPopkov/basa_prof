@@ -19,9 +19,9 @@ public interface MaterialRepository extends JpaRepository<Material, Long> {
 
     Optional<Material> findByUnit(String unit);
 
-    @Query("SELECT DISTINCT m FROM Material m LEFT JOIN FETCH m.supplier LEFT JOIN FETCH m.object o LEFT JOIN FETCH o.client")
+    @Query("SELECT DISTINCT m FROM Material m LEFT JOIN FETCH m.supplier LEFT JOIN FETCH m.object o LEFT JOIN FETCH o.client LEFT JOIN FETCH m.deal")
     List<Material> findAllWithSupplierAndObject();
 
-    @Query("SELECT DISTINCT m FROM Material m LEFT JOIN FETCH m.supplier LEFT JOIN FETCH m.object o LEFT JOIN FETCH o.client WHERE m.id = :id")
+    @Query("SELECT DISTINCT m FROM Material m LEFT JOIN FETCH m.supplier LEFT JOIN FETCH m.object o LEFT JOIN FETCH o.client LEFT JOIN FETCH m.deal WHERE m.id = :id")
     Optional<Material> findByIdWithSupplierAndObject(Long id);
 }

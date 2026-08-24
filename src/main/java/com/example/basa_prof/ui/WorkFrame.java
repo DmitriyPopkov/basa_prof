@@ -1,10 +1,13 @@
 package com.example.basa_prof.ui;
 
 import com.example.basa_prof.entity.Client;
+import com.example.basa_prof.entity.Deal;
 import com.example.basa_prof.entity.ObjectEntity;
 import com.example.basa_prof.entity.Work;
 import com.example.basa_prof.service.ClientService;
+import com.example.basa_prof.service.DealService;
 import com.example.basa_prof.service.ObjectEntityService;
+import com.example.basa_prof.service.ReportService;
 import com.example.basa_prof.service.WorkService;
 
 import javax.swing.*;
@@ -20,6 +23,8 @@ public class WorkFrame extends JFrame {
     private WorkService workService;
     private ClientService clientService;
     private ObjectEntityService objectService;
+    private DealService dealService;
+    private ReportService reportService;
 
     private JTable workTable;
     private DefaultTableModel tableModel;
@@ -27,13 +32,17 @@ public class WorkFrame extends JFrame {
     private JTextField tfName, tfWorkType, tfDescription, tfEstimatedCost,
             tfPrice, tfPayment, tfPaymentDate;
     private JTextField tfStartDate, tfEndDate;
+    private JTextField tfStatus;
     private JComboBox<Client> cbClient;
     private JComboBox<ObjectEntity> cbObject;
+    private JComboBox<Deal> cbDeal;
 
-    public WorkFrame(WorkService workService, ClientService clientService, ObjectEntityService objectService) {
+    public WorkFrame(WorkService workService, ClientService clientService, ObjectEntityService objectService, DealService dealService, ReportService reportService) {
         this.workService = workService;
         this.clientService = clientService;
         this.objectService = objectService;
+        this.dealService = dealService;
+        this.reportService = reportService;
         initialize();
         loadWorks();
         loadClients();
@@ -51,7 +60,7 @@ public class WorkFrame extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Форма ввода
-        JPanel formPanel = new JPanel(new GridLayout(12, 2, 5, 5));
+        JPanel formPanel = new JPanel(new GridLayout(14, 2, 5, 5));
         formPanel.setBorder(BorderFactory.createTitledBorder("Данные работы"));
 
         tfName = new JTextField();
@@ -63,8 +72,10 @@ public class WorkFrame extends JFrame {
         tfPrice = new JTextField();
         tfPayment = new JTextField();
         tfPaymentDate = new JTextField();
+        tfStatus = new JTextField();
         cbClient = new JComboBox<>();
         cbObject = new JComboBox<>();
+        cbDeal = new JComboBox<>();
 
         formPanel.add(new JLabel("Клиент:"));
         formPanel.add(cbClient);
@@ -102,27 +113,39 @@ public class WorkFrame extends JFrame {
         formPanel.add(new JLabel(""));
         formPanel.add(new JLabel(""));
 
-        cbClient.addActionListener(e -> loadObjectsForClient());
+        formPanel.add(new JLabel("Статус:"));
+        formPanel.add(tfStatus);
+
+        formPanel.add(new JLabel("Договор:"));
+        formPanel.add(cbDeal);
+
+        cbClient.addActionListener(e -> {
+            loadObjectsForClient();
+            loadDealsForClient();
+        });
 
         // Кнопки
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton btnSave = new JButton("Сохранить");
         JButton btnDelete = new JButton("Удалить");
         JButton btnRefresh = new JButton("Обновить");
+        JButton btnReport = new JButton("Сформировать отчёт");
 
         btnSave.addActionListener(e -> saveWork());
         btnDelete.addActionListener(e -> deleteWork());
         btnRefresh.addActionListener(e -> loadWorks());
+        btnReport.addActionListener(e -> generateReport());
 
         buttonPanel.add(btnSave);
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnRefresh);
+        buttonPanel.add(btnReport);
 
         mainPanel.add(formPanel, BorderLayout.NORTH);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Таблица
-        String[] columns = {"ID", "Клиент", "Объект", "Название", "Тип", "Оценка", "Цена", "Статус"};
+        String[] columns = {"ID", "Клиент", "Объект", "Название", "Тип", "Оценка", "Цена", "Оплата", "Статус", "Договор"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -162,7 +185,10 @@ public class WorkFrame extends JFrame {
                     work.getName(),
                     work.getWorkType(),
                     work.getEstimatedCost(),
-                    work.getPayment() != null ? work.getPayment() : "—"
+                    work.getPrice(),
+                    work.getPayment() != null ? work.getPayment() : "—",
+                    work.getStatus() != null ? work.getStatus() : "—",
+                    work.getDeal() != null ? work.getDeal().getContractNumber() : "—"
             });
         }
     }
@@ -182,6 +208,17 @@ public class WorkFrame extends JFrame {
             List<ObjectEntity> objects = selectedClient.getObjects();
             for (ObjectEntity object : objects) {
                 cbObject.addItem(object);
+            }
+        }
+    }
+
+    private void loadDealsForClient() {
+        cbDeal.removeAllItems();
+        Client selectedClient = (Client) cbClient.getSelectedItem();
+        if (selectedClient != null) {
+            List<Deal> deals = dealService.findByClientId(selectedClient.getId());
+            for (Deal deal : deals) {
+                cbDeal.addItem(deal);
             }
         }
     }
@@ -218,6 +255,16 @@ public class WorkFrame extends JFrame {
                 }
                 if (work.getPaymentDate() != null) {
                     tfPaymentDate.setText(work.getPaymentDate().format(formatter));
+                }
+                if (work.getStatus() != null) {
+                    tfStatus.setText(work.getStatus());
+                }
+
+                if (work.getDeal() != null && work.getDeal().getClient() != null) {
+                    cbClient.setSelectedItem(work.getDeal().getClient());
+                    loadObjectsForClient();
+                    loadDealsForClient();
+                    cbDeal.setSelectedItem(work.getDeal());
                 }
             }
         }
@@ -300,6 +347,13 @@ public class WorkFrame extends JFrame {
                 work.setPaymentDate(null);
             }
 
+            work.setStatus(tfStatus.getText());
+
+            Deal selectedDeal = (Deal) cbDeal.getSelectedItem();
+            if (selectedDeal != null) {
+                work.setDeal(selectedDeal);
+            }
+
             workService.save(work);
             loadWorks();
             clearForm();
@@ -340,5 +394,34 @@ public class WorkFrame extends JFrame {
         tfPrice.setText("");
         tfPayment.setText("");
         tfPaymentDate.setText("");
+        tfStatus.setText("");
+        cbDeal.removeAllItems();
+    }
+
+    private void generateReport() {
+        Client selectedClient = (Client) cbClient.getSelectedItem();
+        if (selectedClient == null) {
+            JOptionPane.showMessageDialog(this, "Выберите клиента!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        ObjectEntity selectedObject = (ObjectEntity) cbObject.getSelectedItem();
+
+        List<Work> works = workService.findAll();
+        List<Work> filteredWorks = works.stream()
+                .filter(w -> w.getObject() != null && w.getObject().getClient() != null
+                        && w.getObject().getClient().getId().equals(selectedClient.getId()))
+                .filter(w -> selectedObject == null || w.getObject() != null
+                        && w.getObject().getId().equals(selectedObject.getId()))
+                .toList();
+
+        if (filteredWorks.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Работы не найдены!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String saveDir = System.getProperty("user.home") + "\\Documents\\Reports";
+        reportService.generateWorkReport(selectedClient, selectedObject, filteredWorks, saveDir);
+        JOptionPane.showMessageDialog(this, "Отчет успешно создан!", "Успех", JOptionPane.INFORMATION_MESSAGE);
     }
 }

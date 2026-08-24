@@ -1,10 +1,12 @@
 package com.example.basa_prof.ui;
 
 import com.example.basa_prof.entity.Client;
+import com.example.basa_prof.entity.Deal;
 import com.example.basa_prof.entity.Material;
 import com.example.basa_prof.entity.ObjectEntity;
 import com.example.basa_prof.entity.Supplier;
 import com.example.basa_prof.service.ClientService;
+import com.example.basa_prof.service.DealService;
 import com.example.basa_prof.service.MaterialService;
 import com.example.basa_prof.service.ObjectEntityService;
 import com.example.basa_prof.service.SupplierService;
@@ -21,20 +23,24 @@ public class MaterialFrame extends JFrame {
     private SupplierService supplierService;
     private ClientService clientService;
     private ObjectEntityService objectService;
+    private DealService dealService;
 
     private JTable materialTable;
     private DefaultTableModel tableModel;
 
     private JTextField tfName, tfUnit, tfPrice, tfPurchasePrice, tfQuantity, tfDescription;
+    private JTextField tfStatus;
     private JComboBox<Supplier> cbSupplier;
     private JComboBox<Client> cbClient;
     private JComboBox<ObjectEntity> cbObject;
+    private JComboBox<Deal> cbDeal;
 
-    public MaterialFrame(MaterialService materialService, SupplierService supplierService, ClientService clientService, ObjectEntityService objectService) {
+    public MaterialFrame(MaterialService materialService, SupplierService supplierService, ClientService clientService, ObjectEntityService objectService, DealService dealService) {
         this.materialService = materialService;
         this.supplierService = supplierService;
         this.clientService = clientService;
         this.objectService = objectService;
+        this.dealService = dealService;
         initialize();
         loadMaterials();
         loadSuppliers();
@@ -51,7 +57,7 @@ public class MaterialFrame extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Форма ввода
-        JPanel formPanel = new JPanel(new GridLayout(12, 2, 5, 5));
+        JPanel formPanel = new JPanel(new GridLayout(14, 2, 5, 5));
         formPanel.setBorder(BorderFactory.createTitledBorder("Данные материала"));
 
         cbSupplier = new JComboBox<>();
@@ -61,8 +67,10 @@ public class MaterialFrame extends JFrame {
         tfPurchasePrice = new JTextField();
         tfQuantity = new JTextField();
         tfDescription = new JTextField();
+        tfStatus = new JTextField();
         cbClient = new JComboBox<>();
         cbObject = new JComboBox<>();
+        cbDeal = new JComboBox<>();
 
         formPanel.add(new JLabel("Поставщик:"));
         formPanel.add(cbSupplier);
@@ -94,7 +102,16 @@ public class MaterialFrame extends JFrame {
         formPanel.add(new JLabel("Объект:"));
         formPanel.add(cbObject);
 
-        cbClient.addActionListener(e -> loadObjectsForClient());
+        formPanel.add(new JLabel("Статус:"));
+        formPanel.add(tfStatus);
+
+        formPanel.add(new JLabel("Договор:"));
+        formPanel.add(cbDeal);
+
+        cbClient.addActionListener(e -> {
+            loadObjectsForClient();
+            loadDealsForClient();
+        });
 
         // Кнопки
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -114,7 +131,7 @@ public class MaterialFrame extends JFrame {
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Таблица
-        String[] columns = {"ID", "Название", "Ед.изм.", "Цена продаж.", "Цена закупки", "Кол-во", "Поставщик", "Клиент", "Объект"};
+        String[] columns = {"ID", "Название", "Ед.изм.", "Цена продаж.", "Цена закупки", "Кол-во", "Поставщик", "Клиент", "Объект", "Статус", "Договор"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -154,7 +171,9 @@ public class MaterialFrame extends JFrame {
                     material.getSupplier() != null ? material.getSupplier().getName() : "",
                     material.getObject() != null && material.getObject().getClient() != null
                             ? material.getObject().getClient().getFullName() : "—",
-                    material.getObject() != null ? material.getObject().getName() : "—"
+                    material.getObject() != null ? material.getObject().getName() : "—",
+                    material.getStatus() != null ? material.getStatus() : "—",
+                    material.getDeal() != null ? material.getDeal().getContractNumber() : "—"
             });
         }
     }
@@ -186,6 +205,17 @@ public class MaterialFrame extends JFrame {
         }
     }
 
+    private void loadDealsForClient() {
+        cbDeal.removeAllItems();
+        Client selectedClient = (Client) cbClient.getSelectedItem();
+        if (selectedClient != null) {
+            List<Deal> deals = dealService.findByClientId(selectedClient.getId());
+            for (Deal deal : deals) {
+                cbDeal.addItem(deal);
+            }
+        }
+    }
+
     private void fillForm() {
         int selectedRow = materialTable.getSelectedRow();
         if (selectedRow >= 0) {
@@ -203,7 +233,18 @@ public class MaterialFrame extends JFrame {
                 if (material.getObject() != null && material.getObject().getClient() != null) {
                     cbClient.setSelectedItem(material.getObject().getClient());
                     loadObjectsForClient();
+                    loadDealsForClient();
                     cbObject.setSelectedItem(material.getObject());
+                }
+
+                if (material.getStatus() != null) {
+                    tfStatus.setText(material.getStatus());
+                }
+
+                if (material.getDeal() != null && material.getDeal().getClient() != null) {
+                    cbClient.setSelectedItem(material.getDeal().getClient());
+                    loadDealsForClient();
+                    cbDeal.setSelectedItem(material.getDeal());
                 }
             }
         }
@@ -259,6 +300,12 @@ public class MaterialFrame extends JFrame {
             }
 
             material.setDescription(tfDescription.getText());
+            material.setStatus(tfStatus.getText());
+
+            Deal selectedDeal = (Deal) cbDeal.getSelectedItem();
+            if (selectedDeal != null) {
+                material.setDeal(selectedDeal);
+            }
 
             materialService.save(material);
             loadMaterials();
@@ -292,11 +339,13 @@ public class MaterialFrame extends JFrame {
         cbSupplier.setSelectedIndex(-1);
         cbClient.setSelectedIndex(-1);
         cbObject.removeAllItems();
+        cbDeal.removeAllItems();
         tfName.setText("");
         tfUnit.setText("");
         tfPrice.setText("");
         tfPurchasePrice.setText("");
         tfQuantity.setText("");
         tfDescription.setText("");
+        tfStatus.setText("");
     }
 }
