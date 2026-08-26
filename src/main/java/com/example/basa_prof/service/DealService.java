@@ -2,9 +2,16 @@ package com.example.basa_prof.service;
 
 import com.example.basa_prof.entity.Client;
 import com.example.basa_prof.entity.Deal;
+import com.example.basa_prof.entity.Contractor;
 import com.example.basa_prof.repository.DealRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,16 +22,26 @@ public class DealService {
     @Autowired
     private DealRepository dealRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     public List<Deal> findAll() {
-        return dealRepository.findAll();
+        return dealRepository.findAllWithClientAndContractor();
     }
 
+    @Transactional(readOnly = true)
     public Optional<Deal> findById(Long id) {
-        return dealRepository.findById(id);
+        return Optional.ofNullable(entityManager.find(Deal.class, id));
     }
 
+    @Transactional
     public Deal save(Deal deal) {
-        return dealRepository.save(deal);
+        if (deal.getId() == null) {
+            entityManager.persist(deal);
+        } else {
+            entityManager.merge(deal);
+        }
+        return deal;
     }
 
     public void deleteById(Long id) {

@@ -14,6 +14,8 @@ import com.example.basa_prof.service.SupplierService;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -139,7 +141,13 @@ public class MaterialFrame extends JFrame {
             }
         };
 
-        materialTable = new JTable(tableModel);
+        materialTable = new JTable(tableModel){
+        @Override
+        public void removeRowSelectionInterval(int index0, int index1) {
+            // if (hasFocus()) {
+            //   super.removeRowSelectionInterval(index0, index1);
+             }
+        };
         materialTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         materialTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {

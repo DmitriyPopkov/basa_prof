@@ -18,7 +18,8 @@ public class MainFrame extends JFrame {
             EmployeeService employeeService,
             SupplierService supplierService,
             UserService userService,
-            WorkHourService workHourService
+            WorkHourService workHourService,
+            ContractorService contractorService
     ) {
         initialize();
 
@@ -31,6 +32,7 @@ public class MainFrame extends JFrame {
         JMenu menuEmployees = new JMenu("Сотрудники");
         JMenu menuSuppliers = new JMenu("Поставщики");
         JMenu menuUsers = new JMenu("Пользователи");
+        JMenu menuContractors = new JMenu("Исполнители");
         JMenu menuWorkHours = new JMenu("Учет рабочего времени");
 
         JMenuItem menuItem1 = new JMenuItem("Управление клиентами");
@@ -42,7 +44,7 @@ public class MainFrame extends JFrame {
         menuObjects.add(menuItem2);
 
         JMenuItem menuItem3 = new JMenuItem("Управление сделками");
-        menuItem3.addActionListener(e -> new DealFrame(dealService, clientService, objectService).setVisible(true));
+        menuItem3.addActionListener(e -> new DealFrame(dealService, clientService, objectService, contractorService).setVisible(true));
         menuDeals.add(menuItem3);
 
         JMenuItem menuItem4 = new JMenuItem("Управление работами");
@@ -65,6 +67,10 @@ public class MainFrame extends JFrame {
         menuItem8.addActionListener(e -> new UserFrame(userService).setVisible(true));
         menuUsers.add(menuItem8);
 
+        JMenuItem menuItem8a = new JMenuItem("Управление исполнителями");
+        menuItem8a.addActionListener(e -> new ContractorFrame(contractorService).setVisible(true));
+        menuContractors.add(menuItem8a);
+
         JMenuItem menuItem9 = new JMenuItem("Учет рабочего времени");
         menuItem9.addActionListener(e -> new WorkHourFrame(workHourService, employeeService, clientService, objectService, dealService).setVisible(true));
         menuWorkHours.add(menuItem9);
@@ -77,6 +83,7 @@ public class MainFrame extends JFrame {
         menuBar.add(menuEmployees);
         menuBar.add(menuSuppliers);
         menuBar.add(menuUsers);
+        menuBar.add(menuContractors);
         menuBar.add(menuWorkHours);
 
         setJMenuBar(menuBar);

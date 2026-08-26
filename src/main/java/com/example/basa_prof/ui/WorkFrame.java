@@ -13,6 +13,8 @@ import com.example.basa_prof.service.WorkService;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -136,6 +138,8 @@ public class WorkFrame extends JFrame {
         btnRefresh.addActionListener(e -> loadWorks());
         btnReport.addActionListener(e -> generateReport());
 
+        cbClient.addActionListener(e -> loadWorksForClient());
+
         buttonPanel.add(btnSave);
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnRefresh);
@@ -153,12 +157,36 @@ public class WorkFrame extends JFrame {
             }
         };
 
-        workTable = new JTable(tableModel);
-        workTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        workTable.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                fillForm();
+        workTable = new JTable(tableModel){
+            @Override
+            public void removeRowSelectionInterval(int index0, int index1) {
+                if (hasFocus()) {
+                    super.removeRowSelectionInterval(index0, index1);
+                }
             }
+        };
+        workTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        workTable.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = workTable.rowAtPoint(e.getPoint());
+                if (row >= 0) {
+                    workTable.setRowSelectionInterval(row, row);
+                    fillForm();
+                }
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {}
+
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+
+            @Override
+            public void mouseExited(MouseEvent e) {}
         });
 
         JScrollPane scrollPane = new JScrollPane(workTable);
@@ -208,6 +236,37 @@ public class WorkFrame extends JFrame {
             List<ObjectEntity> objects = selectedClient.getObjects();
             for (ObjectEntity object : objects) {
                 cbObject.addItem(object);
+            }
+        }
+    }
+
+    private void loadWorksForClient() {
+        tableModel.setRowCount(0);
+        Client selectedClient = (Client) cbClient.getSelectedItem();
+
+        if (selectedClient == null) {
+            loadWorks();
+            return;
+        }
+
+        List<Work> works = workService.findAll();
+        for (Work work : works) {
+            if (work.getObject() != null && work.getObject().getClient() != null
+                    && work.getObject().getClient().getId().equals(selectedClient.getId())) {
+                String clientName = work.getObject().getClient().getFullName();
+                String objectName = work.getObject().getName();
+                tableModel.addRow(new Object[]{
+                        work.getId(),
+                        clientName,
+                        objectName,
+                        work.getName(),
+                        work.getWorkType(),
+                        work.getEstimatedCost(),
+                        work.getPrice(),
+                        work.getPayment() != null ? work.getPayment() : "—",
+                        work.getStatus() != null ? work.getStatus() : "—",
+                        work.getDeal() != null ? work.getDeal().getContractNumber() : "—"
+                });
             }
         }
     }

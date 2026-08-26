@@ -1,5 +1,6 @@
 package com.example.basa_prof.entity;
 
+import com.example.basa_prof.entity.Contractor;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -48,6 +49,10 @@ public class Deal {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "contractor_id")
+    private Contractor contractor;
 
     @PrePersist
     protected void onCreate() {
@@ -147,6 +152,14 @@ public class Deal {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Contractor getContractor() {
+        return contractor;
+    }
+
+    public void setContractor(Contractor contractor) {
+        this.contractor = contractor;
     }
 
     @Override

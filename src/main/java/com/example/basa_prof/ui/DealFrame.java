@@ -1,10 +1,20 @@
 package com.example.basa_prof.ui;
 
 import com.example.basa_prof.entity.Client;
+import com.example.basa_prof.entity.Contractor;
 import com.example.basa_prof.entity.Deal;
 import com.example.basa_prof.service.ClientService;
+import com.example.basa_prof.service.ContractorService;
 import com.example.basa_prof.service.DealService;
 import com.example.basa_prof.service.ObjectEntityService;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -17,6 +27,7 @@ public class DealFrame extends JFrame {
     private DealService dealService;
     private ClientService clientService;
     private ObjectEntityService objectService;
+    private ContractorService contractorService;
 
     private JTable dealTable;
     private DefaultTableModel tableModel;
@@ -24,14 +35,17 @@ public class DealFrame extends JFrame {
     private JTextField tfContractNumber, tfAmount, tfDealType, tfStatus;
     private JTextArea tfNotes;
     private JComboBox<Client> cbClient;
+    private JComboBox<Contractor> cbContractor;
 
-    public DealFrame(DealService dealService, ClientService clientService, ObjectEntityService objectService) {
+    public DealFrame(DealService dealService, ClientService clientService, ObjectEntityService objectService, ContractorService contractorService) {
         this.dealService = dealService;
         this.clientService = clientService;
         this.objectService = objectService;
+        this.contractorService = contractorService;
         initialize();
         loadDeals();
         loadClients();
+        loadContractors();
     }
 
     private void initialize() {
@@ -44,12 +58,16 @@ public class DealFrame extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Форма ввода
-        JPanel formPanel = new JPanel(new GridLayout(6, 2, 5, 5));
+        JPanel formPanel = new JPanel(new GridLayout(8, 2, 5, 5));
         formPanel.setBorder(BorderFactory.createTitledBorder("Данные сделки"));
 
         formPanel.add(new JLabel("Клиент:"));
         cbClient = new JComboBox<>();
         formPanel.add(cbClient);
+
+        formPanel.add(new JLabel("Исполнитель:"));
+        cbContractor = new JComboBox<>();
+        formPanel.add(cbContractor);
 
         formPanel.add(new JLabel("Номер договора:"));
         tfContractNumber = new JTextField( );
@@ -82,6 +100,8 @@ public class DealFrame extends JFrame {
         btnDelete.addActionListener(e -> deleteDeal());
         btnRefresh.addActionListener(e -> loadDeals());
 
+        cbClient.addActionListener(e -> loadDealsForClient());
+
         buttonPanel.add(btnSave);
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnRefresh);
@@ -90,7 +110,7 @@ public class DealFrame extends JFrame {
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Таблица
-        String[] columns = {"ID", "Клиент", "Договор", "Сумма", "Тип", "Статус"};
+        String[] columns = {"ID", "Клиент", "Исполнитель", "Договор", "Сумма", "Тип", "Статус"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -98,12 +118,63 @@ public class DealFrame extends JFrame {
             }
         };
 
-        dealTable = new JTable(tableModel);
+        dealTable = new JTable(tableModel) {
+            @Override
+            public void removeRowSelectionInterval(int index0, int index1) {
+               // if (hasFocus()) {
+                 //   super.removeRowSelectionInterval(index0, index1);
+               // }
+            }
+        };
         dealTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        dealTable.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
+        dealTable.setRowHeight(25);
+        dealTable.getTableHeader().setReorderingAllowed(false);
+        
+        // Кастомный рендерер для подсветки выделения
+      /*  dealTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public java.awt.Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                java.awt.Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (isSelected) {
+                    c.setBackground(new java.awt.Color(100, 149, 237));
+                    c.setForeground(java.awt.Color.WHITE);
+                } else {
+                    c.setBackground(java.awt.Color.WHITE);
+                    c.setForeground(java.awt.Color.BLACK);
+                }
+                return c;
+            }
+        });
+*/
+        // Обработка выбора строки при клике мыши
+        dealTable.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int row = dealTable.rowAtPoint(e.getPoint());
+                if (row >= 0){
+                    dealTable.setRowSelectionInterval(row, row);
+
+                }
+              //  public void removeRowSelectionInterval(int index0, int index1) {
+                    if (hasFocus()) {
+                        dealTable.removeRowSelectionInterval(row, row);
+                    }
                 fillForm();
             }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {}
+
+            @Override
+            public void mouseEntered(MouseEvent e) {}
+
+            @Override
+            public void mouseExited(MouseEvent e) {}
         });
 
         JScrollPane scrollPane = new JScrollPane(dealTable);
@@ -123,6 +194,7 @@ public class DealFrame extends JFrame {
             tableModel.addRow(new Object[]{
                     deal.getId(),
                     deal.getClient() != null ? deal.getClient().getFullName() : "—",
+                    deal.getContractor() != null ? deal.getContractor().getOrganization() : "—",
                     deal.getContractNumber(),
                     deal.getAmount(),
                     deal.getDealType(),
@@ -139,6 +211,39 @@ public class DealFrame extends JFrame {
         }
     }
 
+    private void loadContractors() {
+        cbContractor.removeAllItems();
+        List<Contractor> contractors = contractorService.findAll();
+        for (Contractor contractor : contractors) {
+            cbContractor.addItem(contractor);
+        }
+    }
+
+    private void loadDealsForClient() {
+        tableModel.setRowCount(0);
+        Client selectedClient = (Client) cbClient.getSelectedItem();
+
+        if (selectedClient == null) {
+            loadDeals();
+            return;
+        }
+
+        List<Deal> deals = dealService.findAll();
+        for (Deal deal : deals) {
+            if (deal.getClient() != null && deal.getClient().getId().equals(selectedClient.getId())) {
+                tableModel.addRow(new Object[]{
+                        deal.getId(),
+                        deal.getClient() != null ? deal.getClient().getFullName() : "—",
+                        deal.getContractor() != null ? deal.getContractor().getOrganization() : "—",
+                        deal.getContractNumber(),
+                        deal.getAmount(),
+                        deal.getDealType(),
+                        deal.getStatus()
+                });
+            }
+        }
+    }
+
     private void fillForm() {
         int selectedRow = dealTable.getSelectedRow();
         if (selectedRow >= 0) {
@@ -146,6 +251,7 @@ public class DealFrame extends JFrame {
             Deal deal = dealService.findById(id).orElse(null);
             if (deal != null) {
                 cbClient.setSelectedItem(deal.getClient());
+                cbContractor.setSelectedItem(deal.getContractor());
                 tfContractNumber.setText(deal.getContractNumber());
                 tfAmount.setText(deal.getAmount() != null ? deal.getAmount().toPlainString() : "");
                 tfDealType.setText(deal.getDealType());
@@ -179,6 +285,8 @@ public class DealFrame extends JFrame {
             }
 
             deal.setClient(selectedClient);
+            Contractor selectedContractor = (Contractor) cbContractor.getSelectedItem();
+            deal.setContractor(selectedContractor);
             deal.setContractNumber(tfContractNumber.getText());
             deal.setAmount(amount);
             deal.setDealType(tfDealType.getText());
@@ -214,6 +322,8 @@ public class DealFrame extends JFrame {
 
     private void clearForm() {
         cbClient.setSelectedIndex(-1);
+        cbContractor.setSelectedIndex(-1);
+        tableModel.setRowCount(0);
         tfContractNumber.setText("");
         tfAmount.setText("");
         tfDealType.setText("");
