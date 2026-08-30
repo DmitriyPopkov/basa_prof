@@ -19,7 +19,8 @@ public class MainFrame extends JFrame {
             SupplierService supplierService,
             UserService userService,
             WorkHourService workHourService,
-            ContractorService contractorService
+            ContractorService contractorService,
+            ExpenseService expenseService
     ) {
         initialize();
 
@@ -33,6 +34,7 @@ public class MainFrame extends JFrame {
         JMenu menuSuppliers = new JMenu("Поставщики");
         JMenu menuUsers = new JMenu("Пользователи");
         JMenu menuContractors = new JMenu("Исполнители");
+        JMenu menuExpenses = new JMenu("Расходы");
         JMenu menuWorkHours = new JMenu("Учет рабочего времени");
 
         JMenuItem menuItem1 = new JMenuItem("Управление клиентами");
@@ -44,7 +46,7 @@ public class MainFrame extends JFrame {
         menuObjects.add(menuItem2);
 
         JMenuItem menuItem3 = new JMenuItem("Управление сделками");
-        menuItem3.addActionListener(e -> new DealFrame(dealService, clientService, objectService, contractorService).setVisible(true));
+        menuItem3.addActionListener(e -> new DealFrame(dealService, clientService, objectService, contractorService, expenseService).setVisible(true));
         menuDeals.add(menuItem3);
 
         JMenuItem menuItem4 = new JMenuItem("Управление работами");
@@ -59,6 +61,10 @@ public class MainFrame extends JFrame {
         menuItem6.addActionListener(e -> new EmployeeFrame(employeeService).setVisible(true));
         menuEmployees.add(menuItem6);
 
+        JMenuItem menuItem7a = new JMenuItem("Поиск поставщика");
+        menuItem7a.addActionListener(e -> new SupplierSearchFrame(supplierService).setVisible(true));
+        menuSuppliers.add(menuItem7a);
+
         JMenuItem menuItem7 = new JMenuItem("Управление поставщиками");
         menuItem7.addActionListener(e -> new SupplierFrame(supplierService).setVisible(true));
         menuSuppliers.add(menuItem7);
@@ -70,6 +76,10 @@ public class MainFrame extends JFrame {
         JMenuItem menuItem8a = new JMenuItem("Управление исполнителями");
         menuItem8a.addActionListener(e -> new ContractorFrame(contractorService).setVisible(true));
         menuContractors.add(menuItem8a);
+
+        JMenuItem menuItem8b = new JMenuItem("Управление расходами");
+        menuItem8b.addActionListener(e -> new ExpenseFrame(expenseService, clientService, objectService, dealService, true).setVisible(true));
+        menuExpenses.add(menuItem8b);
 
         JMenuItem menuItem9 = new JMenuItem("Учет рабочего времени");
         menuItem9.addActionListener(e -> new WorkHourFrame(workHourService, employeeService, clientService, objectService, dealService).setVisible(true));
@@ -84,6 +94,7 @@ public class MainFrame extends JFrame {
         menuBar.add(menuSuppliers);
         menuBar.add(menuUsers);
         menuBar.add(menuContractors);
+        menuBar.add(menuExpenses);
         menuBar.add(menuWorkHours);
 
         setJMenuBar(menuBar);

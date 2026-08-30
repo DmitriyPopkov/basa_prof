@@ -38,7 +38,7 @@ public class MaterialService {
         return materialRepository.findBySupplierId(supplierId);
     }
 
-    public List<Material> findByObjectId(Long objectId) {
-        return materialRepository.findByObjectId(objectId);
+    public List<Material> findByObjectEntityId(Long objectEntityId) {
+        return materialRepository.findByObjectEntityId(objectEntityId);
     }
 }

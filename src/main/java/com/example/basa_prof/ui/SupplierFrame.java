@@ -82,7 +82,7 @@ public class SupplierFrame extends JFrame {
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Таблица
-        String[] columns = {"ID", "Название", "Контактное лицо", "Телефон", "Email", "Адрес"};
+        String[] columns = {"ID", "Название", "Контактное лицо", "Телефон", "Email", "Адрес", "Описание"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -97,6 +97,11 @@ public class SupplierFrame extends JFrame {
                 fillForm();
             }
         });
+
+        // Скрыть колонку ID
+        supplierTable.getColumnModel().getColumn(0).setPreferredWidth(0);
+        supplierTable.getColumnModel().getColumn(0).setMaxWidth(0);
+        supplierTable.getColumnModel().getColumn(0).setMinWidth(0);
 
         JScrollPane scrollPane = new JScrollPane(supplierTable);
         JPanel tablePanel = new JPanel(new BorderLayout());
@@ -118,7 +123,8 @@ public class SupplierFrame extends JFrame {
                     supplier.getContactPerson(),
                     supplier.getPhone(),
                     supplier.getEmail(),
-                    supplier.getAddress()
+                    supplier.getAddress(),
+                    supplier.getDescription() != null ? supplier.getDescription() : "—"
             });
         }
     }
@@ -135,7 +141,7 @@ public class SupplierFrame extends JFrame {
                 tfPhone.setText(supplier.getPhone());
                 tfEmail.setText(supplier.getEmail());
                 tfAddress.setText(supplier.getAddress());
-                tfDescription.setText(supplier.getDescription());
+                tfDescription.setText(supplier.getDescription() != null ? supplier.getDescription() : "");
             }
         }
     }
@@ -162,7 +168,7 @@ public class SupplierFrame extends JFrame {
             supplier.setPhone(tfPhone.getText());
             supplier.setEmail(tfEmail.getText());
             supplier.setAddress(tfAddress.getText());
-            supplier.setDescription(tfDescription.getText());
+            supplier.setDescription(tfDescription.getText().isBlank() ? null : tfDescription.getText());
 
             supplierService.save(supplier);
             loadSuppliers();
@@ -179,8 +185,9 @@ public class SupplierFrame extends JFrame {
         int selectedRow = supplierTable.getSelectedRow();
         if (selectedRow >= 0) {
             Long id = (Long) tableModel.getValueAt(selectedRow, 0);
+            String name = (String) tableModel.getValueAt(selectedRow, 1);
             int confirm = JOptionPane.showConfirmDialog(this,
-                    "Удалить поставщика №" + id + "?",
+                    "Удалить поставщика «" + name + "»?",
                     "Подтверждение",
                     JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {

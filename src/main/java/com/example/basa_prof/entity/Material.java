@@ -28,7 +28,7 @@ public class Material {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "object_id")
-    private ObjectEntity object;
+    private ObjectEntity objectEntity;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "supplier_id")
@@ -109,12 +109,12 @@ public class Material {
         this.description = description;
     }
 
-    public ObjectEntity getObject() {
-        return object;
+    public ObjectEntity getObjectEntity() {
+        return objectEntity;
     }
 
-    public void setObject(ObjectEntity object) {
-        this.object = object;
+    public void setObjectEntity(ObjectEntity objectEntity) {
+        this.objectEntity = objectEntity;
     }
 
     public Supplier getSupplier() {

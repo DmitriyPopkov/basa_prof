@@ -3,22 +3,20 @@ package com.example.basa_prof.ui;
 import com.example.basa_prof.entity.Client;
 import com.example.basa_prof.entity.Contractor;
 import com.example.basa_prof.entity.Deal;
+import com.example.basa_prof.entity.Expense;
+import com.example.basa_prof.entity.ObjectEntity;
 import com.example.basa_prof.service.ClientService;
 import com.example.basa_prof.service.ContractorService;
 import com.example.basa_prof.service.DealService;
+import com.example.basa_prof.service.ExpenseService;
 import com.example.basa_prof.service.ObjectEntityService;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -28,6 +26,7 @@ public class DealFrame extends JFrame {
     private ClientService clientService;
     private ObjectEntityService objectService;
     private ContractorService contractorService;
+    private ExpenseService expenseService;
 
     private JTable dealTable;
     private DefaultTableModel tableModel;
@@ -36,12 +35,14 @@ public class DealFrame extends JFrame {
     private JTextArea tfNotes;
     private JComboBox<Client> cbClient;
     private JComboBox<Contractor> cbContractor;
+    private JButton btnExpenses;
 
-    public DealFrame(DealService dealService, ClientService clientService, ObjectEntityService objectService, ContractorService contractorService) {
+    public DealFrame(DealService dealService, ClientService clientService, ObjectEntityService objectService, ContractorService contractorService, ExpenseService expenseService) {
         this.dealService = dealService;
         this.clientService = clientService;
         this.objectService = objectService;
         this.contractorService = contractorService;
+        this.expenseService = expenseService;
         initialize();
         loadDeals();
         loadClients();
@@ -95,16 +96,20 @@ public class DealFrame extends JFrame {
         JButton btnSave = new JButton("Сохранить");
         JButton btnDelete = new JButton("Удалить");
         JButton btnRefresh = new JButton("Обновить");
+        btnExpenses = new JButton("Расходы");
+        btnExpenses.setEnabled(false);
 
         btnSave.addActionListener(e -> saveDeal());
         btnDelete.addActionListener(e -> deleteDeal());
         btnRefresh.addActionListener(e -> loadDeals());
+        btnExpenses.addActionListener(e -> openExpenses());
 
         cbClient.addActionListener(e -> loadDealsForClient());
 
         buttonPanel.add(btnSave);
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnRefresh);
+        buttonPanel.add(btnExpenses);
 
         mainPanel.add(formPanel, BorderLayout.NORTH);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -121,9 +126,9 @@ public class DealFrame extends JFrame {
         dealTable = new JTable(tableModel) {
             @Override
             public void removeRowSelectionInterval(int index0, int index1) {
-               // if (hasFocus()) {
-                 //   super.removeRowSelectionInterval(index0, index1);
-               // }
+                if (hasFocus()) {
+                    super.removeRowSelectionInterval(index0, index1);
+                }
             }
         };
         dealTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -131,7 +136,7 @@ public class DealFrame extends JFrame {
         dealTable.getTableHeader().setReorderingAllowed(false);
         
         // Кастомный рендерер для подсветки выделения
-      /*  dealTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        dealTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             @Override
             public java.awt.Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 java.awt.Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -145,27 +150,21 @@ public class DealFrame extends JFrame {
                 return c;
             }
         });
-*/
+
         // Обработка выбора строки при клике мыши
         dealTable.addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int row = dealTable.rowAtPoint(e.getPoint());
-                if (row >= 0){
+                if (row >= 0) {
                     dealTable.setRowSelectionInterval(row, row);
-
+                    fillForm();
+                    btnExpenses.setEnabled(true);
                 }
-              //  public void removeRowSelectionInterval(int index0, int index1) {
-                    if (hasFocus()) {
-                        dealTable.removeRowSelectionInterval(row, row);
-                    }
-                fillForm();
             }
 
             @Override
-            public void mousePressed(MouseEvent e) {
-
-            }
+            public void mousePressed(MouseEvent e) {}
 
             @Override
             public void mouseReleased(MouseEvent e) {}
@@ -329,5 +328,22 @@ public class DealFrame extends JFrame {
         tfDealType.setText("");
         tfStatus.setText("");
         tfNotes.setText("");
+        btnExpenses.setEnabled(false);
+    }
+
+    private void openExpenses() {
+        int selectedRow = dealTable.getSelectedRow();
+        if (selectedRow < 0) return;
+
+        Long id = (Long) tableModel.getValueAt(selectedRow, 0);
+        Deal deal = dealService.findByIdWithObjects(id).orElse(null);
+        if (deal == null) return;
+
+        // Открываем ExpenseFrame с уже выбранным клиентом и объектами из сделки
+        Client client = deal.getClient();
+        if (client == null) return;
+
+        ExpenseFrame expenseFrame = new ExpenseFrame(expenseService, clientService, objectService, dealService, deal);
+        expenseFrame.setVisible(true);
     }
 }

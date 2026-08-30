@@ -177,9 +177,9 @@ public class MaterialFrame extends JFrame {
                     material.getPurchasePrice(),
                     material.getQuantity(),
                     material.getSupplier() != null ? material.getSupplier().getName() : "",
-                    material.getObject() != null && material.getObject().getClient() != null
-                            ? material.getObject().getClient().getFullName() : "—",
-                    material.getObject() != null ? material.getObject().getName() : "—",
+                    material.getObjectEntity() != null && material.getObjectEntity().getClient() != null
+                            ? material.getObjectEntity().getClient().getFullName() : "—",
+                    material.getObjectEntity() != null ? material.getObjectEntity().getName() : "—",
                     material.getStatus() != null ? material.getStatus() : "—",
                     material.getDeal() != null ? material.getDeal().getContractNumber() : "—"
             });
@@ -238,11 +238,11 @@ public class MaterialFrame extends JFrame {
                 tfQuantity.setText(material.getQuantity() != null ? material.getQuantity().toString() : "");
                 tfDescription.setText(material.getDescription());
 
-                if (material.getObject() != null && material.getObject().getClient() != null) {
-                    cbClient.setSelectedItem(material.getObject().getClient());
+                if (material.getObjectEntity() != null && material.getObjectEntity().getClient() != null) {
+                    cbClient.setSelectedItem(material.getObjectEntity().getClient());
                     loadObjectsForClient();
                     loadDealsForClient();
-                    cbObject.setSelectedItem(material.getObject());
+                    cbObject.setSelectedItem(material.getObjectEntity());
                 }
 
                 if (material.getStatus() != null) {
@@ -285,7 +285,7 @@ public class MaterialFrame extends JFrame {
             if (selectedClient != null) {
                 ObjectEntity selectedObject = (ObjectEntity) cbObject.getSelectedItem();
                 if (selectedObject != null) {
-                    material.setObject(selectedObject);
+                    material.setObjectEntity(selectedObject);
                 }
             }
 

@@ -98,11 +98,11 @@ public class DemoDataConfig {
                 Material m3 = new Material("Кирпич рядовой", "тысяча штук", new BigDecimal("12000"), new BigDecimal("10500"), 5, "Керамический кирпич М150");
 
                 m1.setSupplier(defaultSupplier);
-                m1.setObject(defaultObject);
+                m1.setObjectEntity(defaultObject);
                 m2.setSupplier(defaultSupplier);
-                m2.setObject(defaultObject);
+                m2.setObjectEntity(defaultObject);
                 m3.setSupplier(defaultSupplier);
-                m3.setObject(defaultObject);
+                m3.setObjectEntity(defaultObject);
 
                 materialRepository.saveAll(java.util.List.of(m1, m2, m3));
                 System.out.println("  - Материалы загружены (поставщик: " + (defaultSupplier != null ? defaultSupplier.getName() : "нет") + ", объект: " + (defaultObject != null ? defaultObject.getName() : "нет") + ")");

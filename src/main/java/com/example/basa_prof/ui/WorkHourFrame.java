@@ -213,9 +213,9 @@ public class WorkHourFrame extends JFrame {
                     wh.getWorkDate() != null ? wh.getWorkDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) : "—",
                     wh.getHours() != null ? wh.getHours().toString() : "—",
                     wh.getHourlyRate() != null ? wh.getHourlyRate().toString() : "—",
-                    wh.getObject() != null && wh.getObject().getClient() != null
-                            ? wh.getObject().getClient().getFullName() : "—",
-                    wh.getObject() != null ? wh.getObject().getName() : "—",
+                    wh.getObjectEntity() != null && wh.getObjectEntity().getClient() != null
+                            ? wh.getObjectEntity().getClient().getFullName() : "—",
+                    wh.getObjectEntity() != null ? wh.getObjectEntity().getName() : "—",
                     wh.getDeal() != null ? wh.getDeal().getContractNumber() : "—"
             });
         }
@@ -281,11 +281,11 @@ public class WorkHourFrame extends JFrame {
                     tfHourlyRate.setText(workHour.getHourlyRate().toString());
                 }
 
-                if (workHour.getObject() != null && workHour.getObject().getClient() != null) {
-                    cbClient.setSelectedItem(workHour.getObject().getClient());
+                if (workHour.getObjectEntity() != null && workHour.getObjectEntity().getClient() != null) {
+                    cbClient.setSelectedItem(workHour.getObjectEntity().getClient());
                     loadObjectsForClient();
                     loadDealsForClient();
-                    cbObject.setSelectedItem(workHour.getObject());
+                    cbObject.setSelectedItem(workHour.getObjectEntity());
                 }
 
                 if (workHour.getDeal() != null && workHour.getDeal().getClient() != null) {
@@ -321,8 +321,8 @@ public class WorkHourFrame extends JFrame {
                     return employeeWorkHours;
                 }
                 return employeeWorkHours.stream()
-                        .filter(wh -> wh.getObject() != null && wh.getObject().getClient() != null
-                                && wh.getObject().getClient().getId().equals(selectedClient.getId()))
+                        .filter(wh -> wh.getObjectEntity() != null && wh.getObjectEntity().getClient() != null
+                                && wh.getObjectEntity().getClient().getId().equals(selectedClient.getId()))
                         .toList();
 
             case "По договору":
@@ -447,10 +447,10 @@ public class WorkHourFrame extends JFrame {
                 String objectName = "—";
                 String dealName = "—";
 
-                if (wh.getObject() != null) {
-                    objectName = wh.getObject().getName();
-                    if (wh.getObject().getClient() != null) {
-                        clientName = wh.getObject().getClient().getFullName();
+                if (wh.getObjectEntity() != null) {
+                    objectName = wh.getObjectEntity().getName();
+                    if (wh.getObjectEntity().getClient() != null) {
+                        clientName = wh.getObjectEntity().getClient().getFullName();
                     }
                 }
 
@@ -594,7 +594,7 @@ public class WorkHourFrame extends JFrame {
             if (selectedClient != null) {
                 ObjectEntity selectedObject = (ObjectEntity) cbObject.getSelectedItem();
                 if (selectedObject != null) {
-                    workHour.setObject(selectedObject);
+                    workHour.setObjectEntity(selectedObject);
                 }
             }
 
@@ -666,9 +666,9 @@ public class WorkHourFrame extends JFrame {
                     wh.getWorkDate() != null ? wh.getWorkDate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")) : "—",
                     wh.getHours() != null ? wh.getHours().toString() : "—",
                     wh.getHourlyRate() != null ? wh.getHourlyRate().toString() : "—",
-                    wh.getObject() != null && wh.getObject().getClient() != null
-                            ? wh.getObject().getClient().getFullName() : "—",
-                    wh.getObject() != null ? wh.getObject().getName() : "—",
+                    wh.getObjectEntity() != null && wh.getObjectEntity().getClient() != null
+                            ? wh.getObjectEntity().getClient().getFullName() : "—",
+                    wh.getObjectEntity() != null ? wh.getObjectEntity().getName() : "—",
                     wh.getDeal() != null ? wh.getDeal().getContractNumber() : "—"
             });
         }

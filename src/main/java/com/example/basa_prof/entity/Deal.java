@@ -20,7 +20,7 @@ public class Deal {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "deal_objects",
             schema = "myschema",

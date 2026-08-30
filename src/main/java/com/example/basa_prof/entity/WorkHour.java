@@ -31,7 +31,7 @@ public class WorkHour {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "object_id")
-    private ObjectEntity object;
+    private ObjectEntity objectEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "deal_id")
@@ -87,12 +87,12 @@ public class WorkHour {
         this.client = client;
     }
 
-    public ObjectEntity getObject() {
-        return object;
+    public ObjectEntity getObjectEntity() {
+        return objectEntity;
     }
 
-    public void setObject(ObjectEntity object) {
-        this.object = object;
+    public void setObjectEntity(ObjectEntity objectEntity) {
+        this.objectEntity = objectEntity;
     }
 
     public Deal getDeal() {

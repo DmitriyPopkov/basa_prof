@@ -203,9 +203,9 @@ public class WorkFrame extends JFrame {
         tableModel.setRowCount(0);
         List<Work> works = workService.findAll();
         for (Work work : works) {
-            String clientName = work.getObject() != null && work.getObject().getClient() != null
-                    ? work.getObject().getClient().getFullName() : "—";
-            String objectName = work.getObject() != null ? work.getObject().getName() : "—";
+            String clientName = work.getObjectEntity() != null && work.getObjectEntity().getClient() != null
+                    ? work.getObjectEntity().getClient().getFullName() : "—";
+            String objectName = work.getObjectEntity() != null ? work.getObjectEntity().getName() : "—";
             tableModel.addRow(new Object[]{
                     work.getId(),
                     clientName,
@@ -251,10 +251,10 @@ public class WorkFrame extends JFrame {
 
         List<Work> works = workService.findAll();
         for (Work work : works) {
-            if (work.getObject() != null && work.getObject().getClient() != null
-                    && work.getObject().getClient().getId().equals(selectedClient.getId())) {
-                String clientName = work.getObject().getClient().getFullName();
-                String objectName = work.getObject().getName();
+            if (work.getObjectEntity() != null && work.getObjectEntity().getClient() != null
+                    && work.getObjectEntity().getClient().getId().equals(selectedClient.getId())) {
+                String clientName = work.getObjectEntity().getClient().getFullName();
+                String objectName = work.getObjectEntity().getName();
                 tableModel.addRow(new Object[]{
                         work.getId(),
                         clientName,
@@ -287,10 +287,10 @@ public class WorkFrame extends JFrame {
             Long id = (Long) tableModel.getValueAt(selectedRow, 0);
             Work work = workService.findById(id).orElse(null);
             if (work != null) {
-                if (work.getObject() != null && work.getObject().getClient() != null) {
-                    cbClient.setSelectedItem(work.getObject().getClient());
+                if (work.getObjectEntity() != null && work.getObjectEntity().getClient() != null) {
+                    cbClient.setSelectedItem(work.getObjectEntity().getClient());
                     loadObjectsForClient();
-                    cbObject.setSelectedItem(work.getObject());
+                    cbObject.setSelectedItem(work.getObjectEntity());
                 }
 
                 tfName.setText(work.getName());
@@ -350,7 +350,7 @@ public class WorkFrame extends JFrame {
             if (selectedClient != null) {
                 ObjectEntity selectedObject = (ObjectEntity) cbObject.getSelectedItem();
                 if (selectedObject != null) {
-                    work.setObject(selectedObject);
+                    work.setObjectEntity(selectedObject);
                 }
             }
 
@@ -468,10 +468,10 @@ public class WorkFrame extends JFrame {
 
         List<Work> works = workService.findAll();
         List<Work> filteredWorks = works.stream()
-                .filter(w -> w.getObject() != null && w.getObject().getClient() != null
-                        && w.getObject().getClient().getId().equals(selectedClient.getId()))
-                .filter(w -> selectedObject == null || w.getObject() != null
-                        && w.getObject().getId().equals(selectedObject.getId()))
+                .filter(w -> w.getObjectEntity() != null && w.getObjectEntity().getClient() != null
+                        && w.getObjectEntity().getClient().getId().equals(selectedClient.getId()))
+                .filter(w -> selectedObject == null || w.getObjectEntity() != null
+                        && w.getObjectEntity().getId().equals(selectedObject.getId()))
                 .toList();
 
         if (filteredWorks.isEmpty()) {

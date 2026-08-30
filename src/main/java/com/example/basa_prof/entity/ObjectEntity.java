@@ -43,10 +43,10 @@ public class ObjectEntity {
     @ManyToMany(mappedBy = "objects", fetch = FetchType.LAZY)
     private List<Deal> deals = new ArrayList<>();
 
-    @OneToMany(mappedBy = "object", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "objectEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Work> works = new ArrayList<>();
 
-    @OneToMany(mappedBy = "object", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "objectEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Material> materials = new ArrayList<>();
 
     @ManyToMany(mappedBy = "objects", fetch = FetchType.LAZY)

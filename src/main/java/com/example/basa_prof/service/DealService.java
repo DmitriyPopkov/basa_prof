@@ -34,6 +34,16 @@ public class DealService {
         return Optional.ofNullable(entityManager.find(Deal.class, id));
     }
 
+    @Transactional(readOnly = true)
+    public Optional<Deal> findByIdWithObjects(Long id) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Deal> cq = cb.createQuery(Deal.class);
+        Root<Deal> deal = cq.from(Deal.class);
+        deal.fetch("objects", jakarta.persistence.criteria.JoinType.LEFT);
+        cq.select(deal).where(cb.equal(deal.get("id"), id));
+        return Optional.ofNullable(entityManager.createQuery(cq).getSingleResultOrNull());
+    }
+
     @Transactional
     public Deal save(Deal deal) {
         if (deal.getId() == null) {

@@ -15,9 +15,9 @@ public interface WorkRepository extends JpaRepository<Work, Long> {
 
     List<Work> findAllByOrderByEstimatedCostDesc();
 
-    @Query("SELECT DISTINCT w FROM Work w LEFT JOIN FETCH w.object o LEFT JOIN FETCH o.client LEFT JOIN FETCH w.deal")
+    @Query("SELECT DISTINCT w FROM Work w LEFT JOIN FETCH w.objectEntity o LEFT JOIN FETCH o.client LEFT JOIN FETCH w.deal")
     List<Work> findAllWithObjectAndClient();
 
-    @Query("SELECT DISTINCT w FROM Work w LEFT JOIN FETCH w.object o LEFT JOIN FETCH o.client LEFT JOIN FETCH w.deal WHERE w.id = :id")
+    @Query("SELECT DISTINCT w FROM Work w LEFT JOIN FETCH w.objectEntity o LEFT JOIN FETCH o.client LEFT JOIN FETCH w.deal WHERE w.id = :id")
     Optional<Work> findByIdWithObjectAndClient(Long id);
 }
