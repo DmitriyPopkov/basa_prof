@@ -15,7 +15,7 @@ import java.util.List;
 
 public class ReportService {
 
-    public void generateWorkReport(Client client, ObjectEntity object, List<Work> works, String saveDir) {
+    public String generateWorkReport(Client client, ObjectEntity object, List<Work> works, String saveDir) {
         try (XWPFDocument document = new XWPFDocument()) {
 
             // Заголовок документа
@@ -159,10 +159,12 @@ public class ReportService {
             }
 
             System.out.println("Отчет успешно создан: " + filePath.toAbsolutePath());
+            return filePath.toString();
 
         } catch (IOException e) {
             System.err.println("Ошибка создания отчета: " + e.getMessage());
             e.printStackTrace();
+            return null;
         }
     }
 

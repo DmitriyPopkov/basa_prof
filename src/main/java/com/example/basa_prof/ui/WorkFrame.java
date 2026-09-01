@@ -480,7 +480,14 @@ public class WorkFrame extends JFrame {
         }
 
         String saveDir = System.getProperty("user.home") + "\\Documents\\Reports";
-        reportService.generateWorkReport(selectedClient, selectedObject, filteredWorks, saveDir);
+        String filePath = reportService.generateWorkReport(selectedClient, selectedObject, filteredWorks, saveDir);
+        if (filePath != null) {
+            try {
+                java.awt.Desktop.getDesktop().open(new java.io.File(filePath));
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Не удалось открыть файл: " + e.getMessage(), "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
+        }
         JOptionPane.showMessageDialog(this, "Отчет успешно создан!", "Успех", JOptionPane.INFORMATION_MESSAGE);
     }
 }
