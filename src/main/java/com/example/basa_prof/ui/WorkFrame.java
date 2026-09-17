@@ -31,10 +31,14 @@ public class WorkFrame extends JFrame {
     private JTable workTable;
     private DefaultTableModel tableModel;
 
-    private JTextField tfName, tfWorkType, tfDescription, tfEstimatedCost,
+    private Long currentWorkId;
+
+    private JTextField tfName, tfWorkType, tfEstimatedCost,
             tfPrice, tfPayment, tfPaymentDate;
     private JTextField tfStartDate, tfEndDate;
     private JTextField tfStatus;
+    private JTextArea tfDescription;
+    private JCheckBox cbDetailedDescription;
     private JComboBox<Client> cbClient;
     private JComboBox<ObjectEntity> cbObject;
     private JComboBox<Deal> cbDeal;
@@ -67,7 +71,6 @@ public class WorkFrame extends JFrame {
 
         tfName = new JTextField();
         tfWorkType = new JTextField();
-        tfDescription = new JTextField();
         tfEstimatedCost = new JTextField();
         tfStartDate = new JTextField();
         tfEndDate = new JTextField();
@@ -78,6 +81,24 @@ public class WorkFrame extends JFrame {
         cbClient = new JComboBox<>();
         cbObject = new JComboBox<>();
         cbDeal = new JComboBox<>();
+
+        // Описание с чекбоксом
+        JPanel descriptionPanel = new JPanel(new BorderLayout(5, 5));
+        descriptionPanel.add(new JLabel("Описание:"), BorderLayout.WEST);
+        tfDescription = new JTextArea(3, 20);
+        tfDescription.setLineWrap(true);
+        tfDescription.setWrapStyleWord(true);
+        JScrollPane descriptionScroll = new JScrollPane(tfDescription);
+        descriptionPanel.add(descriptionScroll, BorderLayout.CENTER);
+
+        cbDetailedDescription = new JCheckBox("Подробное описание");
+        cbDetailedDescription.addActionListener(e -> {
+            if (cbDetailedDescription.isSelected()) {
+                DescriptionFrame descFrame = new DescriptionFrame(WorkFrame.this, tfDescription.getText());
+                descFrame.setVisible(true);
+                tfDescription.setText(descFrame.getDescription());
+            }
+        });
 
         formPanel.add(new JLabel("Клиент:"));
         formPanel.add(cbClient);
@@ -91,8 +112,8 @@ public class WorkFrame extends JFrame {
         formPanel.add(new JLabel("Тип работы:"));
         formPanel.add(tfWorkType);
 
-        formPanel.add(new JLabel("Описание:"));
-        formPanel.add(tfDescription);
+        formPanel.add(descriptionPanel);
+        formPanel.add(cbDetailedDescription);
 
         formPanel.add(new JLabel("Оценка стоимости:"));
         formPanel.add(tfEstimatedCost);
@@ -128,15 +149,17 @@ public class WorkFrame extends JFrame {
 
         // Кнопки
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton btnSave = new JButton("Сохранить");
+        JButton btnSave = new JButton("Сохранить как новую");
         JButton btnDelete = new JButton("Удалить");
         JButton btnRefresh = new JButton("Обновить");
         JButton btnReport = new JButton("Сформировать отчёт");
+        JButton btnSaveMerge = new JButton("Сохранить изменения");
 
         btnSave.addActionListener(e -> saveWork());
         btnDelete.addActionListener(e -> deleteWork());
         btnRefresh.addActionListener(e -> loadWorks());
         btnReport.addActionListener(e -> generateReport());
+        btnSaveMerge.addActionListener(e -> saveWorkMerge());
 
         cbClient.addActionListener(e -> loadWorksForClient());
 
@@ -144,6 +167,7 @@ public class WorkFrame extends JFrame {
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnRefresh);
         buttonPanel.add(btnReport);
+        buttonPanel.add(btnSaveMerge);
 
         mainPanel.add(formPanel, BorderLayout.NORTH);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -284,8 +308,8 @@ public class WorkFrame extends JFrame {
     private void fillForm() {
         int selectedRow = workTable.getSelectedRow();
         if (selectedRow >= 0) {
-            Long id = (Long) tableModel.getValueAt(selectedRow, 0);
-            Work work = workService.findById(id).orElse(null);
+            currentWorkId = (Long) tableModel.getValueAt(selectedRow, 0);
+            Work work = workService.findById(currentWorkId).orElse(null);
             if (work != null) {
                 if (work.getObjectEntity() != null && work.getObjectEntity().getClient() != null) {
                     cbClient.setSelectedItem(work.getObjectEntity().getClient());
@@ -295,7 +319,7 @@ public class WorkFrame extends JFrame {
 
                 tfName.setText(work.getName());
                 tfWorkType.setText(work.getWorkType());
-                tfDescription.setText(work.getDescription());
+                tfDescription.setText(work.getDescription() != null ? work.getDescription() : "");
                 tfEstimatedCost.setText(work.getEstimatedCost() != null ? work.getEstimatedCost().toString() : "");
 
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -356,7 +380,7 @@ public class WorkFrame extends JFrame {
 
             work.setName(tfName.getText());
             work.setWorkType(tfWorkType.getText());
-            work.setDescription(tfDescription.getText());
+            work.setDescription(tfDescription.getText().isBlank() ? null : tfDescription.getText());
 
             if (!tfEstimatedCost.getText().isBlank()) {
                 work.setEstimatedCost(Double.parseDouble(tfEstimatedCost.getText()));
@@ -424,6 +448,109 @@ public class WorkFrame extends JFrame {
         }
     }
 
+    private void saveWorkMerge() {
+        try {
+            if (currentWorkId == null) {
+                JOptionPane.showMessageDialog(this, "Сначала выберите работу в таблице для редактирования!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (tfName.getText().isBlank()) {
+                JOptionPane.showMessageDialog(this, "Название обязательно!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            Work existingWork = workService.findById(currentWorkId).orElse(null);
+            
+            if (existingWork == null) {
+                JOptionPane.showMessageDialog(this, "Работа не найдена!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (tfName.getText().isBlank()) {
+                JOptionPane.showMessageDialog(this, "Название обязательно!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            existingWork.setName(tfName.getText());
+            existingWork.setWorkType(tfWorkType.getText());
+            existingWork.setDescription(tfDescription.getText().isBlank() ? null : tfDescription.getText());
+
+            if (!tfEstimatedCost.getText().isBlank()) {
+                existingWork.setEstimatedCost(Double.parseDouble(tfEstimatedCost.getText()));
+            } else {
+                existingWork.setEstimatedCost(null);
+            }
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+            if (!tfStartDate.getText().isBlank()) {
+                try {
+                    existingWork.setStartDate(LocalDate.parse(tfStartDate.getText(), formatter));
+                } catch (DateTimeParseException e) {
+                    JOptionPane.showMessageDialog(this, "Неверный формат даты начала (дд.мм.гггг)!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } else {
+                existingWork.setStartDate(null);
+            }
+
+            if (!tfEndDate.getText().isBlank()) {
+                try {
+                    existingWork.setEndDate(LocalDate.parse(tfEndDate.getText(), formatter));
+                } catch (DateTimeParseException e) {
+                    JOptionPane.showMessageDialog(this, "Неверный формат даты окончания (дд.мм.гггг)!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } else {
+                existingWork.setEndDate(null);
+            }
+
+            if (!tfPrice.getText().isBlank()) {
+                existingWork.setPrice(Double.parseDouble(tfPrice.getText()));
+            } else {
+                existingWork.setPrice(null);
+            }
+
+            existingWork.setPayment(tfPayment.getText());
+
+            if (!tfPaymentDate.getText().isBlank()) {
+                try {
+                    existingWork.setPaymentDate(LocalDate.parse(tfPaymentDate.getText(), formatter));
+                } catch (DateTimeParseException e) {
+                    JOptionPane.showMessageDialog(this, "Неверный формат даты оплаты (дд.мм.гггг)!", "Ошибка", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } else {
+                existingWork.setPaymentDate(null);
+            }
+
+            existingWork.setStatus(tfStatus.getText());
+
+            Client selectedClient = (Client) cbClient.getSelectedItem();
+            if (selectedClient != null) {
+                ObjectEntity selectedObject = (ObjectEntity) cbObject.getSelectedItem();
+                if (selectedObject != null) {
+                    existingWork.setObjectEntity(selectedObject);
+                }
+            }
+
+            Deal selectedDeal = (Deal) cbDeal.getSelectedItem();
+            if (selectedDeal != null) {
+                existingWork.setDeal(selectedDeal);
+            }
+
+            workService.save(existingWork);
+            currentWorkId = null;
+            loadWorks();
+            clearForm();
+            JOptionPane.showMessageDialog(this, "Работа обновлена!", "Успех", JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (Exception e) {
+            System.err.println("Ошибка обновления: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void deleteWork() {
         int selectedRow = workTable.getSelectedRow();
         if (selectedRow >= 0) {
@@ -447,6 +574,7 @@ public class WorkFrame extends JFrame {
         tfName.setText("");
         tfWorkType.setText("");
         tfDescription.setText("");
+        cbDetailedDescription.setSelected(false);
         tfEstimatedCost.setText("");
         tfStartDate.setText("");
         tfEndDate.setText("");
