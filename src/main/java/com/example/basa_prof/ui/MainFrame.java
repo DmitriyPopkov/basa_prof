@@ -50,7 +50,10 @@ public class MainFrame extends JFrame {
         menuDeals.add(menuItem3);
 
         JMenuItem menuItem4 = new JMenuItem("Управление работами");
-        menuItem4.addActionListener(e -> new WorkFrame(workService, clientService, objectService, dealService, new ReportService()).setVisible(true));
+        menuItem4.addActionListener(e -> {
+            WorkFrame workFrame = new WorkFrame(workService, clientService, objectService, dealService, new ReportService());
+            workFrame.setVisible(true);
+        });
         menuWorks.add(menuItem4);
 
         JMenuItem menuItem5 = new JMenuItem("Управление материалами");

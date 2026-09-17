@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class SupplierService {
+public class SupplierService implements ISupplierService {
 
     @Autowired
     private SupplierRepository supplierRepository;

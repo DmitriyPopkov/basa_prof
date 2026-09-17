@@ -32,6 +32,7 @@ public class MaterialFrame extends JFrame {
 
     private JTextField tfName, tfUnit, tfPrice, tfPurchasePrice, tfQuantity, tfDescription;
     private JTextField tfStatus;
+    private JTextField tfSearch;
     private JComboBox<Supplier> cbSupplier;
     private JComboBox<Client> cbClient;
     private JComboBox<ObjectEntity> cbObject;
@@ -123,14 +124,33 @@ public class MaterialFrame extends JFrame {
 
         btnSave.addActionListener(e -> saveMaterial());
         btnDelete.addActionListener(e -> deleteMaterial());
-        btnRefresh.addActionListener(e -> loadMaterials());
+        btnRefresh.addActionListener(e -> {
+            tfSearch.setText("");
+            loadMaterials();
+        });
 
         buttonPanel.add(btnSave);
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnRefresh);
 
+        // Панель поиска
+        JPanel searchPanel = new JPanel(new BorderLayout(5, 5));
+        searchPanel.setBorder(BorderFactory.createTitledBorder("Поиск материала"));
+        tfSearch = new JTextField();
+        tfSearch.setToolTipText("Введите название материала для поиска");
+        searchPanel.add(new JLabel("Фильтр:"), BorderLayout.WEST);
+        searchPanel.add(tfSearch, BorderLayout.CENTER);
+
+        // Фильтрация при вводе
+        tfSearch.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent e) {
+                filterMaterials();
+            }
+        });
+
         mainPanel.add(formPanel, BorderLayout.NORTH);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        mainPanel.add(searchPanel, BorderLayout.SOUTH);
 
         // Таблица
         String[] columns = {"ID", "Название", "Ед.изм.", "Цена продаж.", "Цена закупки", "Кол-во", "Поставщик", "Клиент", "Объект", "Статус", "Договор"};
@@ -160,7 +180,12 @@ public class MaterialFrame extends JFrame {
         tablePanel.setBorder(BorderFactory.createTitledBorder("Список материалов"));
         tablePanel.add(scrollPane, BorderLayout.CENTER);
 
-        mainPanel.add(tablePanel, BorderLayout.CENTER);
+        // Панель с кнопками и таблицей
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(buttonPanel, BorderLayout.SOUTH);
+        centerPanel.add(tablePanel, BorderLayout.CENTER);
+
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
 
         setContentPane(mainPanel);
     }
@@ -183,6 +208,50 @@ public class MaterialFrame extends JFrame {
                     material.getStatus() != null ? material.getStatus() : "—",
                     material.getDeal() != null ? material.getDeal().getContractNumber() : "—"
             });
+        }
+    }
+
+    private void filterMaterials() {
+        String searchText = tfSearch.getText().trim().toLowerCase();
+        tableModel.setRowCount(0);
+
+        List<Material> allMaterials = materialService.findAll();
+
+        for (Material material : allMaterials) {
+            if (searchText.isEmpty()) {
+                tableModel.addRow(new Object[]{
+                        material.getId(),
+                        material.getName(),
+                        material.getUnit(),
+                        material.getPrice(),
+                        material.getPurchasePrice(),
+                        material.getQuantity(),
+                        material.getSupplier() != null ? material.getSupplier().getName() : "",
+                        material.getObjectEntity() != null && material.getObjectEntity().getClient() != null
+                                ? material.getObjectEntity().getClient().getFullName() : "—",
+                        material.getObjectEntity() != null ? material.getObjectEntity().getName() : "—",
+                        material.getStatus() != null ? material.getStatus() : "—",
+                        material.getDeal() != null ? material.getDeal().getContractNumber() : "—"
+                });
+            } else {
+                // Поиск по названию
+                if (material.getName() != null && material.getName().toLowerCase().contains(searchText)) {
+                    tableModel.addRow(new Object[]{
+                            material.getId(),
+                            material.getName(),
+                            material.getUnit(),
+                            material.getPrice(),
+                            material.getPurchasePrice(),
+                            material.getQuantity(),
+                            material.getSupplier() != null ? material.getSupplier().getName() : "",
+                            material.getObjectEntity() != null && material.getObjectEntity().getClient() != null
+                                    ? material.getObjectEntity().getClient().getFullName() : "—",
+                            material.getObjectEntity() != null ? material.getObjectEntity().getName() : "—",
+                            material.getStatus() != null ? material.getStatus() : "—",
+                            material.getDeal() != null ? material.getDeal().getContractNumber() : "—"
+                    });
+                }
+            }
         }
     }
 
@@ -316,7 +385,7 @@ public class MaterialFrame extends JFrame {
             }
 
             materialService.save(material);
-            loadMaterials();
+            filterMaterials();
             clearForm();
             JOptionPane.showMessageDialog(this, "Материал сохранён!", "Успех", JOptionPane.INFORMATION_MESSAGE);
 
@@ -336,7 +405,7 @@ public class MaterialFrame extends JFrame {
                     JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 materialService.deleteById(id);
-                loadMaterials();
+                filterMaterials();
                 clearForm();
                 JOptionPane.showMessageDialog(this, "Материал удалён!", "Успех", JOptionPane.INFORMATION_MESSAGE);
             }

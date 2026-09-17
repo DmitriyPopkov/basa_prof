@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ObjectEntityService {
+public class ObjectEntityService implements IObjectEntityService {
 
     @Autowired
     private ObjectEntityRepository objectEntityRepository;

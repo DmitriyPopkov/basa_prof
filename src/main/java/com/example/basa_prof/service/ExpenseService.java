@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ExpenseService {
+public class ExpenseService implements IExpenseService {
 
     @Autowired
     private ExpenseRepository expenseRepository;

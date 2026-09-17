@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ContractorService {
+public class ContractorService implements IContractorService {
 
     @Autowired
     private ContractorRepository contractorRepository;

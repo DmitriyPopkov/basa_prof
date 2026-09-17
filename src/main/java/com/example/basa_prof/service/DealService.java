@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class DealService {
+public class DealService implements IDealService {
 
     @Autowired
     private DealRepository dealRepository;
@@ -67,6 +67,11 @@ public class DealService {
     }
 
     public List<Deal> findByClientOrderByDate(Client client) {
+        return dealRepository.findByClientOrderByDealDateDesc(client);
+    }
+
+    @Override
+    public List<Deal> findByClientOrderByDealDateDesc(Client client) {
         return dealRepository.findByClientOrderByDealDateDesc(client);
     }
 }

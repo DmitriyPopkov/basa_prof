@@ -4,7 +4,6 @@ import com.example.basa_prof.entity.Client;
 import com.example.basa_prof.entity.Deal;
 import com.example.basa_prof.entity.ObjectEntity;
 import com.example.basa_prof.entity.Work;
-import org.apache.poi.xwpf.usermodel.*;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,6 +12,10 @@ import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
+import org.apache.poi.xwpf.usermodel.*;
+import org.springframework.stereotype.Component;
+
+@Component
 public class ReportService {
 
     public String generateWorkReport(Client client, ObjectEntity object, List<Work> works, String saveDir) {
