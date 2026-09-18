@@ -15,4 +15,5 @@ public interface IMaterialService {
     List<Material> searchByName(String name);
     List<Material> findBySupplierId(Long supplierId);
     List<Material> findByObjectEntityId(Long objectEntityId);
+    List<Material> findByDealId(Long dealId);
 }

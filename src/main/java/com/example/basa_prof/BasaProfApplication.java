@@ -66,10 +66,11 @@ public class BasaProfApplication {
                 WorkHourService workHourService = context.getBean(WorkHourService.class);
                 ContractorService contractorService = context.getBean(ContractorService.class);
                 ExpenseService expenseService = context.getBean(ExpenseService.class);
+                PaymentService paymentService = context.getBean(PaymentService.class);
 
                   MainFrame mainFrame = new MainFrame(
                                           clientService, dealService, objectService, workService, materialService,
-                          employeeService, supplierService, userService, workHourService, contractorService, expenseService
+                          employeeService, supplierService, userService, workHourService, contractorService, expenseService, paymentService
                                   );
                 mainFrame.setVisible(true);
             } catch (Exception e) {

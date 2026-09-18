@@ -10,6 +10,7 @@ import com.example.basa_prof.service.ContractorService;
 import com.example.basa_prof.service.DealService;
 import com.example.basa_prof.service.ExpenseService;
 import com.example.basa_prof.service.ObjectEntityService;
+import com.example.basa_prof.service.PaymentService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -27,6 +28,7 @@ public class DealFrame extends JFrame {
     private ObjectEntityService objectService;
     private ContractorService contractorService;
     private ExpenseService expenseService;
+    private PaymentService paymentService;
 
     private JTable dealTable;
     private DefaultTableModel tableModel;
@@ -36,13 +38,15 @@ public class DealFrame extends JFrame {
     private JComboBox<Client> cbClient;
     private JComboBox<Contractor> cbContractor;
     private JButton btnExpenses;
+    private JButton btnPayments;
 
-    public DealFrame(DealService dealService, ClientService clientService, ObjectEntityService objectService, ContractorService contractorService, ExpenseService expenseService) {
+    public DealFrame(DealService dealService, ClientService clientService, ObjectEntityService objectService, ContractorService contractorService, ExpenseService expenseService, PaymentService paymentService) {
         this.dealService = dealService;
         this.clientService = clientService;
         this.objectService = objectService;
         this.contractorService = contractorService;
         this.expenseService = expenseService;
+        this.paymentService = paymentService;
         initialize();
         loadDeals();
         loadClients();
@@ -98,11 +102,14 @@ public class DealFrame extends JFrame {
         JButton btnRefresh = new JButton("Обновить");
         btnExpenses = new JButton("Расходы");
         btnExpenses.setEnabled(false);
+        btnPayments = new JButton("Оплата");
+        btnPayments.setEnabled(false);
 
         btnSave.addActionListener(e -> saveDeal());
         btnDelete.addActionListener(e -> deleteDeal());
         btnRefresh.addActionListener(e -> loadDeals());
         btnExpenses.addActionListener(e -> openExpenses());
+        btnPayments.addActionListener(e -> openPayments());
 
         cbClient.addActionListener(e -> loadDealsForClient());
 
@@ -110,6 +117,7 @@ public class DealFrame extends JFrame {
         buttonPanel.add(btnDelete);
         buttonPanel.add(btnRefresh);
         buttonPanel.add(btnExpenses);
+        buttonPanel.add(btnPayments);
 
         mainPanel.add(formPanel, BorderLayout.NORTH);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -160,6 +168,7 @@ public class DealFrame extends JFrame {
                     dealTable.setRowSelectionInterval(row, row);
                     fillForm();
                     btnExpenses.setEnabled(true);
+                    btnPayments.setEnabled(true);
                 }
             }
 
@@ -329,6 +338,7 @@ public class DealFrame extends JFrame {
         tfStatus.setText("");
         tfNotes.setText("");
         btnExpenses.setEnabled(false);
+        btnPayments.setEnabled(false);
     }
 
     private void openExpenses() {
@@ -345,5 +355,21 @@ public class DealFrame extends JFrame {
 
         ExpenseFrame expenseFrame = new ExpenseFrame(expenseService, clientService, objectService, dealService, deal);
         expenseFrame.setVisible(true);
+    }
+
+    private void openPayments() {
+        int selectedRow = dealTable.getSelectedRow();
+        if (selectedRow < 0) return;
+
+        Long id = (Long) tableModel.getValueAt(selectedRow, 0);
+        Deal deal = dealService.findByIdWithObjects(id).orElse(null);
+        if (deal == null) return;
+
+        // Открываем PaymentFrame с уже выбранным клиентом и объектами из сделки
+        Client client = deal.getClient();
+        if (client == null) return;
+
+        PaymentFrame paymentFrame = new PaymentFrame(paymentService, clientService, objectService, dealService, deal);
+        paymentFrame.setVisible(true);
     }
 }

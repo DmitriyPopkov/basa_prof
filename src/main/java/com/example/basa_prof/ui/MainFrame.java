@@ -20,7 +20,8 @@ public class MainFrame extends JFrame {
             UserService userService,
             WorkHourService workHourService,
             ContractorService contractorService,
-            ExpenseService expenseService
+            ExpenseService expenseService,
+            PaymentService paymentService
     ) {
         initialize();
 
@@ -36,6 +37,7 @@ public class MainFrame extends JFrame {
         JMenu menuContractors = new JMenu("Исполнители");
         JMenu menuExpenses = new JMenu("Расходы");
         JMenu menuWorkHours = new JMenu("Учет рабочего времени");
+        JMenu menuAnalitica = new JMenu("Аналитика");
 
         JMenuItem menuItem1 = new JMenuItem("Управление клиентами");
         menuItem1.addActionListener(e -> new ClientFrame(clientService).setVisible(true));
@@ -46,7 +48,7 @@ public class MainFrame extends JFrame {
         menuObjects.add(menuItem2);
 
         JMenuItem menuItem3 = new JMenuItem("Управление сделками");
-        menuItem3.addActionListener(e -> new DealFrame(dealService, clientService, objectService, contractorService, expenseService).setVisible(true));
+        menuItem3.addActionListener(e -> new DealFrame(dealService, clientService, objectService, contractorService, expenseService, paymentService).setVisible(true));
         menuDeals.add(menuItem3);
 
         JMenuItem menuItem4 = new JMenuItem("Управление работами");
@@ -84,9 +86,17 @@ public class MainFrame extends JFrame {
         menuItem8b.addActionListener(e -> new ExpenseFrame(expenseService, clientService, objectService, dealService, true).setVisible(true));
         menuExpenses.add(menuItem8b);
 
+        JMenuItem menuItem8c = new JMenuItem("Управление оплатами");
+        menuItem8c.addActionListener(e -> new PaymentFrame(paymentService, clientService, objectService, dealService).setVisible(true));
+        menuExpenses.add(menuItem8c);
+
         JMenuItem menuItem9 = new JMenuItem("Учет рабочего времени");
         menuItem9.addActionListener(e -> new WorkHourFrame(workHourService, employeeService, clientService, objectService, dealService).setVisible(true));
         menuWorkHours.add(menuItem9);
+
+        JMenuItem menuItem10 = new JMenuItem("Аналитика");
+        menuItem10.addActionListener(e -> new AnaliticaFrame(workHourService, employeeService, clientService, objectService, dealService, materialService, workService).setVisible(true));
+        menuAnalitica.add(menuItem10);
 
         menuBar.add(menuClients);
         menuBar.add(menuObjects);
@@ -99,6 +109,7 @@ public class MainFrame extends JFrame {
         menuBar.add(menuContractors);
         menuBar.add(menuExpenses);
         menuBar.add(menuWorkHours);
+        menuBar.add(menuAnalitica);
 
         setJMenuBar(menuBar);
     }

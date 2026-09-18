@@ -41,4 +41,8 @@ public class MaterialService implements IMaterialService {
     public List<Material> findByObjectEntityId(Long objectEntityId) {
         return materialRepository.findByObjectEntityId(objectEntityId);
     }
+
+    public List<Material> findByDealId(Long dealId) {
+        return materialRepository.findByDealId(dealId);
+    }
 }
